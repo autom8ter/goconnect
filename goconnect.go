@@ -1,22 +1,30 @@
 package goconnect
 
 import (
+	"cloud.google.com/go/firestore"
 	"context"
 	"firebase.google.com/go"
+	"firebase.google.com/go/auth"
 	"firebase.google.com/go/db"
 	"firebase.google.com/go/messaging"
 	"firebase.google.com/go/storage"
-	"firebase.google.com/go/auth"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sfreiberg/gotwilio"
 	"github.com/stripe/stripe-go"
 	"github.com/stripe/stripe-go/client"
-	"cloud.google.com/go/firestore"
 	"google.golang.org/api/option"
 	"log"
 	"net/http"
-	"os"
 )
+
+//Config holds the required configuration variables to create a GoConnect Instance
+type Config struct {
+	FirebaseCredsPath string `json:"firebase_creds_path"`
+	TwilioAccount     string `json:"twilio_account"`
+	TwilioToken       string `json:"twilio_token"`
+	SendGridToken     string `json:"sendgrid_token"`
+	StripeToken       string `json:"stripe_token"`
+}
 
 // GoConnect holds an authenticated Twilio, Stripe, Firebase, and SendGrid Client. It also carries an HTTP client and context.
 type GoConnect struct {
@@ -28,24 +36,23 @@ type GoConnect struct {
 	app   *firebase.App
 }
 
-// New Creates a new GoConnect from the provided http client, firebase credentials read from $PWN/credentials.json, and the following environmental
-// variables: TWILIO_ACCOUNT TWILIO_TOKEN SENDGRID_TOKEN STRIPE_TOKEN
-func New(cli *http.Client) *GoConnect {
+// New Creates a new GoConnect from the provided http client and config
+func New(cli *http.Client, c *Config) *GoConnect {
 	ctx := context.Background()
 	if cli == nil {
 		cli = http.DefaultClient
 	}
-	app, err := firebase.NewApp(ctx, nil, option.WithCredentialsFile("credentials.json"))
+	app, err := firebase.NewApp(ctx, nil, option.WithCredentialsFile(c.FirebaseCredsPath))
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 	return &GoConnect{
-		twil:  gotwilio.NewTwilioClientCustomHTTP(os.Getenv("TWILIO_ACCOUNT"), os.Getenv("TWILIO_TOKEN"), cli),
-		grid:  sendgrid.NewSendClient(os.Getenv("SENDGRID_TOKEN")),
-		strip: client.New(os.Getenv("STRIPE_TOKEN"), stripe.NewBackends(cli)),
+		twil:  gotwilio.NewTwilioClientCustomHTTP(c.TwilioAccount, c.TwilioToken, cli),
+		grid:  sendgrid.NewSendClient(c.SendGridToken),
+		strip: client.New(c.StripeToken, stripe.NewBackends(cli)),
 		cli:   cli,
-		ctx : ctx,
-		app: app,
+		ctx:   ctx,
+		app:   app,
 	}
 }
 
@@ -87,7 +94,6 @@ func (g *GoConnect) Storage() *storage.Client {
 	return a
 }
 
-
 // Firestore returns an authenticated Firebase Firestore client
 func (g *GoConnect) Firestore() *firestore.Client {
 	a, err := g.app.Firestore(g.ctx)
@@ -105,7 +111,6 @@ func (g *GoConnect) Messaging() *messaging.Client {
 	}
 	return a
 }
-
 
 // Database returns an authenticated Firebase Database client
 func (g *GoConnect) Database(url string) *db.Client {

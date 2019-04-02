@@ -5,9 +5,19 @@
 
 ## Usage
 
-- Place firebase credentials in $PWD/credentials.json
-- Set TWILIO_ACCOUNT, TWILIO_TOKEN, SENDGRID_TOKEN, and STRIPE_TOKEN in env variables
-- Profit.
+#### type Config
+
+```go
+type Config struct {
+	FirebaseCredsPath string
+	TwilioAccount     string
+	TwilioToken       string
+	SendGridToken     string
+	StripeToken       string
+}
+```
+
+Config holds the required configuration variables to create a GoConnect Instance
 
 #### type GoConnect
 
@@ -22,11 +32,9 @@ It also carries an HTTP client and context.
 #### func  New
 
 ```go
-func New(cli *http.Client) *GoConnect
+func New(cli *http.Client, c *Config) *GoConnect
 ```
-New Creates a new GoConnect from the provided http client, firebase credentials
-read from $PWN/credentials.json, and the following environmental variables:
-TWILIO_ACCOUNT TWILIO_TOKEN SENDGRID_TOKEN STRIPE_TOKEN
+New Creates a new GoConnect from the provided http client and config
 
 #### func (*GoConnect) Auth
 
