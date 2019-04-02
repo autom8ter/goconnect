@@ -97,6 +97,14 @@ func (g *GoConnect) CallWithApp(to, from, appSid string) (*gotwilio.VoiceRespons
 	return resp, nil
 }
 
+func (g *GoConnect) CreateVideoRoom() (*gotwilio.VideoResponse, error) {
+	resp, ex, err :=  g.twil.CreateVideoRoom(gotwilio.DefaultVideoRoomOptions)
+	if err != nil {
+		return resp, fmt.Errorf("exception: %s\nerror: %s\n", g.JSONString(ex), err.Error())
+	}
+	return resp, nil
+}
+
 func (g *GoConnect) JSONString(obj interface{}) string {
 	return util.ToPrettyJsonString(obj)
 }
