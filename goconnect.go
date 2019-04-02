@@ -8,6 +8,7 @@ import (
 	"firebase.google.com/go/db"
 	"firebase.google.com/go/messaging"
 	"firebase.google.com/go/storage"
+	"github.com/nlopes/slack"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sfreiberg/gotwilio"
 	"github.com/stripe/stripe-go"
@@ -22,18 +23,24 @@ type Config struct {
 	FirebaseCredsPath string `json:"firebase_creds_path"`
 	TwilioAccount     string `json:"twilio_account"`
 	TwilioToken       string `json:"twilio_token"`
+	SendGridAccount   string `json:"sendgrid_account"`
 	SendGridToken     string `json:"sendgrid_token"`
+	StripeAccount     string `json:"stripe_account"`
 	StripeToken       string `json:"stripe_token"`
+	SlackAccount      string `json:"slack_account"`
+	SlackToken        string `json:"slack_token"`
 }
 
 // GoConnect holds an authenticated Twilio, Stripe, Firebase, and SendGrid Client. It also carries an HTTP client and context.
 type GoConnect struct {
 	ctx   context.Context
+	creds *Config
 	cli   *http.Client
 	twil  *gotwilio.Twilio
 	grid  *sendgrid.Client
 	strip *client.API
 	app   *firebase.App
+	chat  *slack.Client
 }
 
 // New Creates a new GoConnect from the provided http client and config
@@ -46,14 +53,22 @@ func New(cli *http.Client, c *Config) *GoConnect {
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
+
 	return &GoConnect{
+		creds: c,
 		twil:  gotwilio.NewTwilioClientCustomHTTP(c.TwilioAccount, c.TwilioToken, cli),
 		grid:  sendgrid.NewSendClient(c.SendGridToken),
 		strip: client.New(c.StripeToken, stripe.NewBackends(cli)),
 		cli:   cli,
 		ctx:   ctx,
 		app:   app,
+		chat:  slack.New(c.SlackToken),
 	}
+}
+
+// Stripe returns an authenticated Stripe client
+func (g *GoConnect) Config() *Config {
+	return g.creds
 }
 
 // Stripe returns an authenticated Stripe client
@@ -66,9 +81,14 @@ func (g *GoConnect) Twilio() *gotwilio.Twilio {
 	return g.twil
 }
 
-// Twilio returns an authenticated SendGrid client
+// SendGrid returns an authenticated SendGrid client
 func (g *GoConnect) SendGrid() *sendgrid.Client {
 	return g.grid
+}
+
+// Slack returns an authenticated Slack client
+func (g *GoConnect) Slack() *slack.Client {
+	return g.chat
 }
 
 // Twilio returns an HTTP client
