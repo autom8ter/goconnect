@@ -12,8 +12,12 @@ type Config struct {
 	FirebaseCredsPath string `json:"firebase_creds_path"`
 	TwilioAccount     string `json:"twilio_account"`
 	TwilioToken       string `json:"twilio_token"`
+	SendGridAccount   string `json:"sendgrid_account"`
 	SendGridToken     string `json:"sendgrid_token"`
+	StripeAccount     string `json:"stripe_account"`
 	StripeToken       string `json:"stripe_token"`
+	SlackAccount      string `json:"slack_account"`
+	SlackToken        string `json:"slack_token"`
 }
 ```
 
@@ -42,6 +46,13 @@ New Creates a new GoConnect from the provided http client and config
 func (g *GoConnect) Auth() *auth.Client
 ```
 Auth returns an authenticated Firebase Auth client
+
+#### func (*GoConnect) Config
+
+```go
+func (g *GoConnect) Config() *Config
+```
+Stripe returns an authenticated Stripe client
 
 #### func (*GoConnect) Database
 
@@ -76,7 +87,14 @@ Messaging returns an authenticated Firebase Messaging client
 ```go
 func (g *GoConnect) SendGrid() *sendgrid.Client
 ```
-Twilio returns an authenticated SendGrid client
+SendGrid returns an authenticated SendGrid client
+
+#### func (*GoConnect) Slack
+
+```go
+func (g *GoConnect) Slack() *slack.Client
+```
+Slack returns an authenticated Slack client
 
 #### func (*GoConnect) Storage
 
