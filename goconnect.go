@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/autom8ter/engine/util"
 	"github.com/autom8ter/goconnect/pkg/config"
+	"github.com/autom8ter/goconnect/pkg/customer"
 	"github.com/autom8ter/goconnect/pkg/email"
 	"github.com/autom8ter/goconnect/pkg/pay"
 	"github.com/sendgrid/rest"
@@ -11,17 +12,7 @@ import (
 	"github.com/sfreiberg/gotwilio"
 	"github.com/stripe/stripe-go"
 	"github.com/stripe/stripe-go/charge"
-	"github.com/stripe/stripe-go/customer"
-	"net/http"
 )
-
-type Config struct {
-	Client        *http.Client
-	TwilioAccount string
-	TwilioToken   string
-	SendGridToken string
-	StripeToken   string
-}
 
 type GoConnect struct {
 	twil *gotwilio.Twilio
@@ -36,8 +27,8 @@ func New(opts ...config.ConfigOption) *GoConnect {
 	}
 }
 
-func (g *GoConnect) NewCustomer(params *stripe.CustomerParams) (*stripe.Customer, error) {
-	return customer.New(params)
+func (g *GoConnect) NewCustomer(opts ...customer.Option) (*stripe.Customer, error) {
+	return customer.New(opts...)
 }
 
 func (g *GoConnect) ChargeCustomer(opts ...pay.ChargeOption) ([]*stripe.Charge, error) {
