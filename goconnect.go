@@ -2,6 +2,7 @@ package goconnect
 
 import (
 	"fmt"
+	"github.com/autom8ter/engine/util"
 	"github.com/autom8ter/goconnect/pkg/config"
 	"github.com/autom8ter/goconnect/pkg/email"
 	"github.com/autom8ter/goconnect/pkg/pay"
@@ -55,7 +56,7 @@ func (g *GoConnect) ChargeCustomer(opts ...pay.ChargeOption) ([]*stripe.Charge, 
 func (g *GoConnect) SMS(to, from, body, callback, app string) (*gotwilio.SmsResponse, error) {
 	resp, ex, err := g.twil.SendSMS(from, to, body, callback, app)
 	if err != nil {
-		return resp, fmt.Errorf("exception: %s\nerror: %s\n", ex, err.Error())
+		return resp, fmt.Errorf("exception: %s\nerror: %s\n", g.JSONString(ex), err.Error())
 	}
 	return resp, nil
 }
@@ -63,7 +64,7 @@ func (g *GoConnect) SMS(to, from, body, callback, app string) (*gotwilio.SmsResp
 func (g *GoConnect) MMS(to, from, body, mediaURL string, callback, app string) (*gotwilio.SmsResponse, error) {
 	resp, ex, err := g.twil.SendMMS(from, to, body, mediaURL, callback, app)
 	if err != nil {
-		return resp, fmt.Errorf("exception: %s\nerror: %s\n", ex, err.Error())
+		return resp, fmt.Errorf("exception: %s\nerror: %s\n", g.JSONString(ex), err.Error())
 	}
 	return resp, nil
 }
@@ -71,7 +72,7 @@ func (g *GoConnect) MMS(to, from, body, mediaURL string, callback, app string) (
 func (g *GoConnect) SMSCopilot(to, service, body, callback, app string) (*gotwilio.SmsResponse, error) {
 	resp, ex, err := g.twil.SendSMSWithCopilot(service, to, body, callback, app)
 	if err != nil {
-		return resp, fmt.Errorf("exception: %s\nerror: %s\n", ex, err.Error())
+		return resp, fmt.Errorf("exception: %s\nerror: %s\n", g.JSONString(ex), err.Error())
 	}
 	return resp, nil
 }
@@ -83,7 +84,7 @@ func (g *GoConnect) Email(opts ...email.EmailOption) (*rest.Response, error) {
 func (g *GoConnect) Call(to, from, callback string) (*gotwilio.VoiceResponse, error) {
 	resp, ex, err := g.twil.CallWithUrlCallbacks(from, to, gotwilio.NewCallbackParameters(callback))
 	if err != nil {
-		return resp, fmt.Errorf("exception: %s\nerror: %s\n", ex, err.Error())
+		return resp, fmt.Errorf("exception: %s\nerror: %s\n", g.JSONString(ex), err.Error())
 	}
 	return resp, nil
 }
@@ -91,7 +92,11 @@ func (g *GoConnect) Call(to, from, callback string) (*gotwilio.VoiceResponse, er
 func (g *GoConnect) CallWithApp(to, from, appSid string) (*gotwilio.VoiceResponse, error) {
 	resp, ex, err := g.twil.CallWithApplicationCallbacks(from, to, appSid)
 	if err != nil {
-		return resp, fmt.Errorf("exception: %s\nerror: %s\n", ex, err.Error())
+		return resp, fmt.Errorf("exception: %s\nerror: %s\n", g.JSONString(ex), err.Error())
 	}
 	return resp, nil
+}
+
+func (g *GoConnect) JSONString(obj interface{}) string {
+	return util.ToPrettyJsonString(obj)
 }

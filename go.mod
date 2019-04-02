@@ -2,8 +2,7 @@ module github.com/autom8ter/goconnect
 
 require (
 	github.com/autom8ter/api v0.0.0-20190401234042-1a81fe273705
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
-	github.com/golang/protobuf v1.3.1 // indirect
+	github.com/autom8ter/engine v0.0.0-20190329053011-dc0f5aa62cf8
 	github.com/gorilla/schema v1.1.0 // indirect
 	github.com/sendgrid/rest v2.4.1+incompatible
 	github.com/sendgrid/sendgrid-go v3.4.1+incompatible
