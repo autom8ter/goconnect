@@ -1,9 +1,20 @@
 package goconnect_test
 
-import "testing"
+import (
+	"github.com/autom8ter/goconnect"
+	"log"
+	"testing"
+)
 
-func TestGoConnect_NewCustomer(t *testing.T) {
+func init() {
+	g = goconnect.Default(nil)
 
 }
 
+var g *goconnect.GoConnect
 
+func TestNewFromEnv(t *testing.T) {
+	if g == nil {
+		log.Fatalln("nil goconnect")
+	}
+}
