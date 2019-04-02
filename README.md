@@ -9,11 +9,11 @@
 
 ```go
 type Config struct {
-	FirebaseCredsPath string
-	TwilioAccount     string
-	TwilioToken       string
-	SendGridToken     string
-	StripeToken       string
+	FirebaseCredsPath string `json:"firebase_creds_path"`
+	TwilioAccount     string `json:"twilio_account"`
+	TwilioToken       string `json:"twilio_token"`
+	SendGridToken     string `json:"sendgrid_token"`
+	StripeToken       string `json:"stripe_token"`
 }
 ```
 
