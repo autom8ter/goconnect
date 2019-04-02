@@ -39,7 +39,7 @@ func (g *GoConnect) NewCustomer(params *stripe.CustomerParams) (*stripe.Customer
 	return customer.New(params)
 }
 
-func (g *GoConnect) ChargeCustomer(c *stripe.Customer, opts ...pay.ChargeOption) ([]*stripe.Charge, error) {
+func (g *GoConnect) ChargeCustomer(opts ...pay.ChargeOption) ([]*stripe.Charge, error) {
 	params := pay.NewCharge(opts...)
 	var charges = []*stripe.Charge{}
 	i := charge.List(params)
