@@ -5,6 +5,10 @@
 
 ## Usage
 
+- Place firebase credentials in $PWD/credentials.json
+- Set TWILIO_ACCOUNT, TWILIO_TOKEN, SENDGRID_TOKEN, and STRIPE_TOKEN in env variables
+- Profit.
+
 #### type GoConnect
 
 ```go
@@ -12,69 +16,77 @@ type GoConnect struct {
 }
 ```
 
+GoConnect holds an authenticated Twilio, Stripe, Firebase, and SendGrid Client.
+It also carries an HTTP client and context.
 
 #### func  New
 
 ```go
-func New(opts ...config.ConfigOption) *GoConnect
+func New(cli *http.Client) *GoConnect
 ```
+New Creates a new GoConnect from the provided http client, firebase credentials
+read from $PWN/credentials.json, and the following environmental variables:
+TWILIO_ACCOUNT TWILIO_TOKEN SENDGRID_TOKEN STRIPE_TOKEN
 
-#### func (*GoConnect) Call
+#### func (*GoConnect) Auth
 
 ```go
-func (g *GoConnect) Call(to, from, callback string) (*gotwilio.VoiceResponse, error)
+func (g *GoConnect) Auth() *auth.Client
 ```
+Auth returns an authenticated Firebase Auth client
 
-#### func (*GoConnect) CallWithApp
+#### func (*GoConnect) Database
 
 ```go
-func (g *GoConnect) CallWithApp(to, from, appSid string) (*gotwilio.VoiceResponse, error)
+func (g *GoConnect) Database(url string) *db.Client
 ```
+Database returns an authenticated Firebase Database client
 
-#### func (*GoConnect) ChargeCustomer
+#### func (*GoConnect) Firestore
 
 ```go
-func (g *GoConnect) ChargeCustomer(opts ...pay.ChargeOption) ([]*stripe.Charge, error)
+func (g *GoConnect) Firestore() *firestore.Client
 ```
+Firestore returns an authenticated Firebase Firestore client
 
-#### func (*GoConnect) CreateVideoRoom
+#### func (*GoConnect) HTTP
 
 ```go
-func (g *GoConnect) CreateVideoRoom() (*gotwilio.VideoResponse, error)
+func (g *GoConnect) HTTP() *http.Client
 ```
+Twilio returns an HTTP client
 
-#### func (*GoConnect) Email
+#### func (*GoConnect) Messaging
 
 ```go
-func (g *GoConnect) Email(opts ...email.EmailOption) (*rest.Response, error)
+func (g *GoConnect) Messaging() *messaging.Client
 ```
+Messaging returns an authenticated Firebase Messaging client
 
-#### func (*GoConnect) JSONString
+#### func (*GoConnect) SendGrid
 
 ```go
-func (g *GoConnect) JSONString(obj interface{}) string
+func (g *GoConnect) SendGrid() *sendgrid.Client
 ```
+Twilio returns an authenticated SendGrid client
 
-#### func (*GoConnect) MMS
+#### func (*GoConnect) Storage
 
 ```go
-func (g *GoConnect) MMS(to, from, body, mediaURL string, callback, app string) (*gotwilio.SmsResponse, error)
+func (g *GoConnect) Storage() *storage.Client
 ```
+Store returns an authenticated Firebase Storage client
 
-#### func (*GoConnect) NewCustomer
+#### func (*GoConnect) Stripe
 
 ```go
-func (g *GoConnect) NewCustomer(opts ...customer.Option) (*stripe.Customer, error)
+func (g *GoConnect) Stripe() *client.API
 ```
+Stripe returns an authenticated Stripe client
 
-#### func (*GoConnect) SMS
+#### func (*GoConnect) Twilio
 
 ```go
-func (g *GoConnect) SMS(to, from, body, callback, app string) (*gotwilio.SmsResponse, error)
+func (g *GoConnect) Twilio() *gotwilio.Twilio
 ```
-
-#### func (*GoConnect) SMSCopilot
-
-```go
-func (g *GoConnect) SMSCopilot(to, service, body, callback, app string) (*gotwilio.SmsResponse, error)
-```
+Twilio returns an authenticated Twilio client

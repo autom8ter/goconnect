@@ -1,6 +1,7 @@
 module github.com/autom8ter/goconnect
 
 require (
+	cloud.google.com/go v0.34.0
 	firebase.google.com/go v3.6.0+incompatible
 	github.com/autom8ter/api v0.0.0-20190401234042-1a81fe273705 // indirect
 	github.com/autom8ter/gosdk v0.0.0-20190401043200-737af3c84563 // indirect

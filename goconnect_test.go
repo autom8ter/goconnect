@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	g = goconnect.Default(nil)
+	g = goconnect.New(nil)
 
 }
 
