@@ -12,6 +12,7 @@ import (
 	"github.com/autom8ter/gocrypt"
 	"github.com/autom8ter/gosub"
 	"github.com/nlopes/slack"
+	"github.com/pkg/errors"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sfreiberg/gotwilio"
 	"github.com/stripe/stripe-go"
@@ -164,4 +165,16 @@ func (g *GoConnect) GoCrypt() *gocrypt.GoCrypt {
 // Stringify formats an object and turns it into a JSON string
 func (g *GoConnect) Stringify(obj interface{}) string {
 	return util.ToPrettyJsonString(obj)
+}
+
+type Func func(g *GoConnect) error
+
+func (g *GoConnect) Execute(fns ...Func) error {
+	var err error
+	for _, f := range fns {
+		if newErr := f(g); newErr != nil {
+			err = errors.Wrap(err, newErr.Error())
+		}
+	}
+	return err
 }
