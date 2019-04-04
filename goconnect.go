@@ -8,6 +8,9 @@ import (
 	"firebase.google.com/go/db"
 	"firebase.google.com/go/messaging"
 	"firebase.google.com/go/storage"
+	"github.com/autom8ter/engine/util"
+	"github.com/autom8ter/gocrypt"
+	"github.com/autom8ter/gosub"
 	"github.com/nlopes/slack"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sfreiberg/gotwilio"
@@ -41,6 +44,8 @@ type GoConnect struct {
 	strip *client.API
 	app   *firebase.App
 	chat  *slack.Client
+	sub   *gosub.GoSub
+	crypt *gocrypt.GoCrypt
 }
 
 // New Creates a new GoConnect from the provided http client and config
@@ -53,7 +58,10 @@ func New(cli *http.Client, c *Config) *GoConnect {
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
-
+	su, err := gosub.New(ctx, "", option.WithCredentialsFile(c.FirebaseCredsPath))
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
 	return &GoConnect{
 		creds: c,
 		twil:  gotwilio.NewTwilioClientCustomHTTP(c.TwilioAccount, c.TwilioToken, cli),
@@ -63,6 +71,8 @@ func New(cli *http.Client, c *Config) *GoConnect {
 		ctx:   ctx,
 		app:   app,
 		chat:  slack.New(c.SlackToken),
+		sub:   su,
+		crypt: gocrypt.NewGoCrypt(),
 	}
 }
 
@@ -139,4 +149,19 @@ func (g *GoConnect) Database(url string) *db.Client {
 		log.Fatalln(err.Error())
 	}
 	return a
+}
+
+// GoSub returns an authenticated GoSub client
+func (g *GoConnect) GoSub() *gosub.GoSub {
+	return g.sub
+}
+
+// GoSub returns a GoCrypt client
+func (g *GoConnect) GoCrypt() *gocrypt.GoCrypt {
+	return g.crypt
+}
+
+// Stringify formats an object and turns it into a JSON string
+func (g *GoConnect) Stringify(obj interface{}) string {
+	return util.ToPrettyJsonString(obj)
 }
