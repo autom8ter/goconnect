@@ -9,19 +9,26 @@
 
 ```go
 type Config struct {
-	FirebaseCredsPath string `json:"firebase_creds_path"`
-	TwilioAccount     string `json:"twilio_account"`
-	TwilioToken       string `json:"twilio_token"`
-	SendGridAccount   string `json:"sendgrid_account"`
-	SendGridToken     string `json:"sendgrid_token"`
-	StripeAccount     string `json:"stripe_account"`
-	StripeToken       string `json:"stripe_token"`
-	SlackAccount      string `json:"slack_account"`
-	SlackToken        string `json:"slack_token"`
+	GCPCredsPath    string `json:"firebase_creds_path"`
+	TwilioAccount   string `json:"twilio_account"`
+	TwilioToken     string `json:"twilio_token"`
+	SendGridAccount string `json:"sendgrid_account"`
+	SendGridToken   string `json:"sendgrid_token"`
+	StripeAccount   string `json:"stripe_account"`
+	StripeToken     string `json:"stripe_token"`
+	SlackAccount    string `json:"slack_account"`
+	SlackToken      string `json:"slack_token"`
 }
 ```
 
 Config holds the required configuration variables to create a GoConnect Instance
+
+#### type Func
+
+```go
+type Func func(g *GoConnect) error
+```
+
 
 #### type GoConnect
 
@@ -40,33 +47,32 @@ func New(cli *http.Client, c *Config) *GoConnect
 ```
 New Creates a new GoConnect from the provided http client and config
 
-#### func (*GoConnect) Auth
-
-```go
-func (g *GoConnect) Auth() *auth.Client
-```
-Auth returns an authenticated Firebase Auth client
-
 #### func (*GoConnect) Config
 
 ```go
 func (g *GoConnect) Config() *Config
 ```
-Stripe returns an authenticated Stripe client
+Config returns the config used to create the GoConnect instance
 
-#### func (*GoConnect) Database
-
-```go
-func (g *GoConnect) Database(url string) *db.Client
-```
-Database returns an authenticated Firebase Database client
-
-#### func (*GoConnect) Firestore
+#### func (*GoConnect) Execute
 
 ```go
-func (g *GoConnect) Firestore() *firestore.Client
+func (g *GoConnect) Execute(fns ...Func) error
 ```
-Firestore returns an authenticated Firebase Firestore client
+
+#### func (*GoConnect) GCP
+
+```go
+func (g *GoConnect) GCP() *gcloud.GCP
+```
+GCP returns a gcloud.GCP instance
+
+#### func (*GoConnect) GoCrypt
+
+```go
+func (g *GoConnect) GoCrypt() *gocrypt.GoCrypt
+```
+GoSub returns a GoCrypt client
 
 #### func (*GoConnect) HTTP
 
@@ -74,13 +80,6 @@ Firestore returns an authenticated Firebase Firestore client
 func (g *GoConnect) HTTP() *http.Client
 ```
 Twilio returns an HTTP client
-
-#### func (*GoConnect) Messaging
-
-```go
-func (g *GoConnect) Messaging() *messaging.Client
-```
-Messaging returns an authenticated Firebase Messaging client
 
 #### func (*GoConnect) SendGrid
 
@@ -95,13 +94,6 @@ SendGrid returns an authenticated SendGrid client
 func (g *GoConnect) Slack() *slack.Client
 ```
 Slack returns an authenticated Slack client
-
-#### func (*GoConnect) Storage
-
-```go
-func (g *GoConnect) Storage() *storage.Client
-```
-Store returns an authenticated Firebase Storage client
 
 #### func (*GoConnect) Stripe
 

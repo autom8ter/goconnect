@@ -7,9 +7,9 @@ require (
 	dmitri.shuralyov.com/service/change v0.0.0-20181023043359-a85b471d5412 // indirect
 	dmitri.shuralyov.com/state v0.0.0-20180228185332-28bcc343414c // indirect
 	firebase.google.com/go v3.6.0+incompatible
-	github.com/autom8ter/commander v0.0.0-20190403035737-5d09bd7cace9
 	github.com/autom8ter/engine v0.0.0-20190329053011-dc0f5aa62cf8
-	github.com/autom8ter/gocrypt v0.0.0-20190401215419-4aacc403bd4d
+	github.com/autom8ter/gcloud v0.0.0-20190405045739-7cb869700bc9
+	github.com/autom8ter/gocrypt v0.0.0-20190405014227-981cb38a93ea
 	github.com/autom8ter/gosaas v0.0.0-20190403043001-2edc013f8640 // indirect
 	github.com/autom8ter/gosub v0.0.0-20190404052952-4275f750c402
 	github.com/microcosm-cc/bluemonday v1.0.1 // indirect
@@ -41,7 +41,6 @@ require (
 	github.com/shurcooL/webdavfs v0.0.0-20170829043945-18c3829fa133 // indirect
 	github.com/sourcegraph/annotate v0.0.0-20160123013949-f4cad6c6324d // indirect
 	github.com/sourcegraph/syntaxhighlight v0.0.0-20170531221838-bd320f5d308e // indirect
-	github.com/spf13/viper v1.3.2
 	github.com/stripe/stripe-go v60.0.0+incompatible
 	gocloud.dev v0.12.0 // indirect
 	google.golang.org/api v0.3.0

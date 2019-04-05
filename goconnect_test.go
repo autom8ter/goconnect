@@ -9,11 +9,11 @@ import (
 
 func init() {
 	g = goconnect.New(nil, &goconnect.Config{
-		FirebaseCredsPath: "credentials.json",
-		TwilioAccount:     os.Getenv("TWILIO_ACCOUNT"),
-		TwilioToken:       os.Getenv("TWILIO_TOKEN"),
-		SendGridToken:     os.Getenv("SENDGRID_TOKEN"),
-		StripeToken:       os.Getenv("STRIPE_TOKEN"),
+		GCPCredsPath:  "credentials.json",
+		TwilioAccount: os.Getenv("TWILIO_ACCOUNT"),
+		TwilioToken:   os.Getenv("TWILIO_TOKEN"),
+		SendGridToken: os.Getenv("SENDGRID_TOKEN"),
+		StripeToken:   os.Getenv("STRIPE_TOKEN"),
 	})
 }
 
