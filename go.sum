@@ -129,6 +129,12 @@ github.com/autom8ter/gcloud v0.0.0-20190405045739-7cb869700bc9 h1:gjQCArZfpLrqGS
 github.com/autom8ter/gcloud v0.0.0-20190405045739-7cb869700bc9/go.mod h1:WV5v80gZAvGQTbvVDIcsxUfCL2mwYZwEjBOgaNlryDQ=
 github.com/autom8ter/gcloud v0.0.0-20190407063728-86f7961fa452 h1:yAI6ZqkYqAWnsvSv0hONQfikrev6J3STyhkztVo97eg=
 github.com/autom8ter/gcloud v0.0.0-20190407063728-86f7961fa452/go.mod h1:sq9gr77+26SXZVAcIeJkWqa/Vi4xhkoagCIw6G4iJOM=
+github.com/autom8ter/gcloud v0.0.0-20190407073022-d42cb3d9e88c h1:CZJ7Zcnchf9QXFD5SnJY+Gj0pK7+a30GS3yDSdRnQ9Q=
+github.com/autom8ter/gcloud v0.0.0-20190407073022-d42cb3d9e88c/go.mod h1:c2XkAeKzHFIKARrHI3kaWQBS0w88jAwK/N2ZmIhkcbg=
+github.com/autom8ter/gcloud v0.0.0-20190407075125-88e8b818b4e0 h1:grbA0epTgkCUfVKS4Lf3ESOweUnU6AxEX0MSRvo5sPo=
+github.com/autom8ter/gcloud v0.0.0-20190407075125-88e8b818b4e0/go.mod h1:fio+GhzliP+VYErrAWAZT7OwNX5LvjSBn4ztC8l1ElE=
+github.com/autom8ter/gcloud v0.0.0-20190407081444-3c41697d83d9 h1:qYelMh4cZ/grr8APng5MG7h5NP/btFRHunpqKGGSplg=
+github.com/autom8ter/gcloud v0.0.0-20190407081444-3c41697d83d9/go.mod h1:PYJN4lLwFEbd1dBFjOa0z39yYSdVbztaIhLJQVUqOQ0=
 github.com/autom8ter/goconnect v0.0.0-20190402111924-9bd4e1dce7a1/go.mod h1:EIvngHX6RfNiyqwIQOzD6nmgDbLlQ/n3O/asMn4Wkxk=
 github.com/autom8ter/goconnect v0.0.0-20190405051018-77c8c8b1b6d2/go.mod h1:CX09D/MdQmYa+fiMMpplWoNGCeF64XmjEBxFE0jAeb4=
 github.com/autom8ter/gocrypt v0.0.0-20190401215419-4aacc403bd4d h1:UvcApbkNG9zyJR7pAStUKIYHiGk6vDxqg3q4CKoHhM4=
@@ -149,6 +155,8 @@ github.com/autom8ter/gosub v0.0.0-20190403064024-5edff1c4043b h1:yRL8OYI9PA0/Rlx
 github.com/autom8ter/gosub v0.0.0-20190403064024-5edff1c4043b/go.mod h1:g45bPC8NYKH5qVnBpCpxlTLOhMSqeAUw5osKrenElX4=
 github.com/autom8ter/gosub v0.0.0-20190404052952-4275f750c402 h1:ZpMXxExMcPOkGxDdiurdUBpzT/hIEGVnHdFtNE1Hfnk=
 github.com/autom8ter/gosub v0.0.0-20190404052952-4275f750c402/go.mod h1:gxHIqY6go0oUg38WC60YlwGXJvMPD3egxAZyl+kPHtQ=
+github.com/autom8ter/objectify v0.0.0-20190407094657-91bdd7133430 h1:Zco7QFG48tfpccyoMCS1dFnwhi+Iku/Ow6ikJwakffU=
+github.com/autom8ter/objectify v0.0.0-20190407094657-91bdd7133430/go.mod h1:s73VOKma8PH+o1xgp0R3PwIQTNAorPTH7xSugdrUB4o=
 github.com/autom8ter/plugins v0.0.0-20190328210842-acc38ebe8466/go.mod h1:p9lcaqU+mP6mqsbYJP9TWY5FDzxKxPWQfMvEb09OwzY=
 github.com/autom8ter/util v0.0.0-20190315143019-1ab48ff7769b h1:9/xdefJqW1AlO2awvgxCFPnJjg1m8TO5EzdSk/B0oFU=
 github.com/autom8ter/util v0.0.0-20190315143019-1ab48ff7769b/go.mod h1:2h8US+tG3Wg9A68c4Io0aKdc506t3QyphvcRhvp8p1Q=
@@ -223,6 +231,7 @@ github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815/go.mod h1:WwZ+bS3
 github.com/duosecurity/duo_api_golang v0.0.0-20181024123116-92fea9203dbc/go.mod h1:UqXY1lYT/ERa4OEAywUqdok1T4RCRdArkhic1Opuavo=
 github.com/duosecurity/duo_api_golang v0.0.0-20190107154727-539434bf0d45/go.mod h1:UqXY1lYT/ERa4OEAywUqdok1T4RCRdArkhic1Opuavo=
 github.com/dustin/go-humanize v0.0.0-20180421182945-02af3965c54e/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
+github.com/dustin/go-humanize v1.0.0 h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4zYo=
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
 github.com/eapache/go-resiliency v1.1.0/go.mod h1:kFI+JgMyC7bLPUVY133qvEBtVayf5mFgVsvEsIPBvNs=
 github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21/go.mod h1:+020luEh2TKB4/GOp8oxxtq0Daoen/Cii55CzbTV6DU=
@@ -345,6 +354,7 @@ github.com/grpc-ecosystem/grpc-gateway v1.8.5/go.mod h1:vNeuVxBJEsws4ogUvrchl83t
 github.com/h2non/bimg v1.0.19/go.mod h1:R3+UiYwkK4rQl6KVFTOFJHitgLbZXBZNFh2cv3AEbp8=
 github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed/go.mod h1:tMWxXQ9wFIaZeTI9F+hmhFiGpFmhOHzyShyFUhRm0H4=
 github.com/hashicorp/consul v1.4.0/go.mod h1:mFrjN1mfidgJfYP1xrJCF+AfRhr6Eaqhb2+sfyn/OOI=
+github.com/hashicorp/errwrap v1.0.0 h1:hLrqtEDnRye3+sgx6z4qVLNuviH3MR5aQ0ykNJa/UYA=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
 github.com/hashicorp/go-cleanhttp v0.5.0 h1:wvCrVc9TjDls6+YGAF2hAifE1E5U1+b4tH6KdvN3Gig=
 github.com/hashicorp/go-cleanhttp v0.5.0/go.mod h1:JpRdi6/HCYpAwUzNwuwqhbovhLtngrth3wmdIIUrZ80=
@@ -358,6 +368,7 @@ github.com/hashicorp/go-immutable-radix v1.0.0/go.mod h1:0y9vanUI8NX6FsYoO3zeMjh
 github.com/hashicorp/go-memdb v0.0.0-20181108192425-032f93b25bec/go.mod h1:kbfItVoBJwCfKXDXN4YoAXjxcFVZ7MRrJzyTX6H4giE=
 github.com/hashicorp/go-msgpack v0.0.0-20150518234257-fa3f63826f7c/go.mod h1:ahLV/dePpqEmjfWmKiqvPkv/twdG7iPBM1vqhUKIvfM=
 github.com/hashicorp/go-msgpack v0.5.3/go.mod h1:ahLV/dePpqEmjfWmKiqvPkv/twdG7iPBM1vqhUKIvfM=
+github.com/hashicorp/go-multierror v1.0.0 h1:iVjPR7a6H0tWELX5NxNe7bYopibicUzc7uPribsnS6o=
 github.com/hashicorp/go-multierror v1.0.0/go.mod h1:dHtQlpGsu+cZNNAkkCN/P3hoUDHhCYQXV3UM06sGGrk=
 github.com/hashicorp/go-plugin v0.0.0-20181030172320-54b6ff97d818/go.mod h1:Ft7ju2vWzhO0ETMKUVo12XmXmII6eSUS4rsPTkY/siA=
 github.com/hashicorp/go-plugin v0.0.0-20181212150838-f444068e8f5a/go.mod h1:Ft7ju2vWzhO0ETMKUVo12XmXmII6eSUS4rsPTkY/siA=
@@ -682,8 +693,11 @@ go.opencensus.io v0.19.2 h1:ZZpq6xI6kv/LuE/5s5UQvBU5vMjvRnPb8PvJrIntAnc=
 go.opencensus.io v0.19.2/go.mod h1:NO/8qkisMZLZ1FCsKNqtJPwc8/TaclWyY0B6wcYNg9M=
 go.opencensus.io v0.20.0 h1:L/ARO58pdktB6dLmYI0zAyW1XnavEmGziFd0MKfxnck=
 go.opencensus.io v0.20.0/go.mod h1:NO/8qkisMZLZ1FCsKNqtJPwc8/TaclWyY0B6wcYNg9M=
+go.uber.org/atomic v1.3.2 h1:2Oa65PReHzfn29GpvgsYwloV9AVFHPDk8tYxt2c2tr4=
 go.uber.org/atomic v1.3.2/go.mod h1:gD2HeocX3+yG+ygLZcrzQJaqmWj9AIm7n08wl/qW/PE=
+go.uber.org/multierr v1.1.0 h1:HoEmRHQPVSqub6w2z2d2EOVs2fjyFRGyofhKuyDq0QI=
 go.uber.org/multierr v1.1.0/go.mod h1:wR5kodmAFQ0UK8QlbwjlSNy0Z68gJhDJUG5sjR94q/0=
+go.uber.org/zap v1.9.1 h1:XCJQEf3W6eZaVwhRBof6ImoYGJSITeKWsyeh3HFu/5o=
 go.uber.org/zap v1.9.1/go.mod h1:vwi/ZaCAaUcBkycHslxD9B2zi4UTXhF60s6SWpuDF0Q=
 go4.org v0.0.0-20180809161055-417644f6feb5/go.mod h1:MkTOUMDaeVYJUOUsaDXIhWPZYa1yOyC1qaOBpL57BhE=
 gocloud.dev v0.12.0 h1:0iumZUZg0Pul0Vx9PAikYmvaJPppbReWKTEIYn1ISvE=
@@ -703,6 +717,8 @@ golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2 h1:VklqNMn3ovrHsnt90Pveol
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20190325154230-a5d413f7728c h1:Vj5n4GlwjmQteupaxJ9+0FNOmBrHfq7vN4btdGoDZgI=
 golang.org/x/crypto v0.0.0-20190325154230-a5d413f7728c/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
+golang.org/x/crypto v0.0.0-20190404164418-38d8ce5564a5 h1:bselrhR0Or1vomJZC8ZIjWtbDmn9OYFLX5Ik9alpJpE=
+golang.org/x/crypto v0.0.0-20190404164418-38d8ce5564a5/go.mod h1:WFFai1msRO1wXaEeE5yQxYXgSfI8pQAWXbQop6sCtWE=
 golang.org/x/exp v0.0.0-20180321215751-8460e604b9de/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
 golang.org/x/exp v0.0.0-20181112044915-a3060d491354/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
 golang.org/x/exp v0.0.0-20190121172915-509febef88a4/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
@@ -768,6 +784,8 @@ golang.org/x/sys v0.0.0-20190318195719-6c81ef8f67ca h1:o2TLx1bGN3W+Ei0EMU5fShLup
 golang.org/x/sys v0.0.0-20190318195719-6c81ef8f67ca/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20190329044733-9eb1bfa1ce65 h1:hOY+O8MxdkPV10pNf7/XEHaySCiPKxixMKUshfHsGn0=
 golang.org/x/sys v0.0.0-20190329044733-9eb1bfa1ce65/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20190403152447-81d4e9dc473e h1:nFYrTHrdrAOpShe27kaFHjsqYSEQ0KWqdWLu3xuZJts=
+golang.org/x/sys v0.0.0-20190403152447-81d4e9dc473e/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/text v0.3.0 h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.1-0.20180807135948-17ff2d5776d2 h1:z99zHgr7hKfrUcX/KsoJk5FJfjTceCKIp96+biqP4To=

@@ -2,34 +2,39 @@ package goconnect
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"github.com/autom8ter/gcloud"
-	"github.com/autom8ter/goconnect/util"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/autom8ter/objectify"
 	"github.com/nlopes/slack"
 	"github.com/pkg/errors"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sfreiberg/gotwilio"
 	"github.com/stripe/stripe-go"
 	"github.com/stripe/stripe-go/client"
+	"google.golang.org/api/option"
 	"io"
+	"log"
 	"net/http"
 )
 
+var tool = objectify.New()
+
 //Config holds the required configuration variables to create a GoConnect Instance
 type Config struct {
-	GCPProjectID    string   `validate:"required"`
-	GCPCredsPath    string   `validate:"required"`
-	TwilioAccount   string   `validate:"required"`
-	TwilioToken     string   `validate:"required"`
-	SendGridAccount string   `validate:"required"`
-	SendGridToken   string   `validate:"required"`
-	StripeAccount   string   `validate:"required"`
-	StripeToken     string   `validate:"required"`
-	SlackAccount    string   `validate:"required"`
+	ProjectID       string `validate:"required"`
+	JSONPath        string `validate:"required"`
+	TwilioAccount   string `validate:"required"`
+	TwilioToken     string `validate:"required"`
+	SendGridAccount string
+	SendGridToken   string `validate:"required"`
+	StripeAccount   string
+	StripeToken     string `validate:"required"`
+	SlackAccount    string
 	SlackToken      string   `validate:"required"`
 	Scopes          []string `validate:"required"`
 	InCluster       bool
-	MasterKey       string `validate:"required"`
+	MasterKey       string
 }
 
 // GoConnect holds an authenticated Twilio, Stripe, Firebase, and SendGrid Client. It also carries an HTTP client and context.
@@ -44,51 +49,37 @@ type GoConnect struct {
 	data  map[string]interface{} `validate:"required"`
 }
 
-type MyCustomClaims struct {
-	Account string `json:"account"`
-	Email   string `json:"email"`
-	Phone   string `json:"phone"`
-	jwt.StandardClaims
-}
-
 // New Creates a new GoConnect from the provided http client and config
 func New(ctx context.Context, c *Config) (*GoConnect, error) {
-	if err := util.Validate(c); err != nil {
-		return nil, err
+	if err := tool.Validate(c); err != nil {
+		panic(err.Error())
 	}
-	g := &GoConnect{}
-	var err error
-	g.ctx = ctx
-	g.cfg = c
-	g.gcp, err = gcloud.New(ctx, &gcloud.Config{
-		Project:   c.GCPProjectID,
+	gcp := gcloud.New(ctx, &gcloud.Config{
+		Project:   c.ProjectID,
 		Scopes:    c.Scopes,
 		InCluster: false,
-		SpannerDB: "",
-		Options:   nil,
+		Options:   []option.ClientOption{option.WithCredentialsFile(c.JSONPath)},
 	})
-	err = g.gcp.WithClients()
-	if err != nil {
-		return g, util.WrapErr(err, "failed to add GCP clients")
+	if err := gcp.Error(); err != nil {
+		log.Println("gcp initialization error- ignore if not using client in error.", err.Error())
 	}
-	err = g.gcp.WithServices()
-	if err != nil {
-		return g, util.WrapErr(err, "failed to add GCP services")
+
+	chat := slack.New(c.SlackToken)
+	twil := gotwilio.NewTwilioClientCustomHTTP(c.TwilioAccount, c.TwilioToken, gcp.HTTP())
+	strip := client.New(c.StripeToken, stripe.NewBackends(gcp.HTTP()))
+	grid := sendgrid.NewSendClient(c.SendGridToken)
+	data := make(map[string]interface{})
+	g := &GoConnect{
+		ctx:   ctx,
+		cfg:   c,
+		twil:  twil,
+		grid:  grid,
+		chat:  chat,
+		strip: strip,
+		data:  data,
 	}
-	if err != nil {
-		err = util.WrapErr(err, "failed to create gcloud client")
-	}
-	if err != nil {
-		err = util.WrapErr(err, "failed to create http client from config scopes")
-	}
-	g.chat = slack.New(c.SlackToken)
-	g.twil = gotwilio.NewTwilioClientCustomHTTP(c.TwilioAccount, c.TwilioToken, g.HTTP())
-	g.strip = client.New(c.StripeToken, stripe.NewBackends(g.HTTP()))
-	g.grid = sendgrid.NewSendClient(c.SendGridToken)
-	g.data = make(map[string]interface{})
-	err = util.Validate(g)
-	if err != nil {
-		return g, err
+	if err := tool.Validate(g); err != nil {
+		panic(err.Error())
 	}
 	return g, nil
 }
@@ -129,28 +120,28 @@ func (g *GoConnect) HTTP() *http.Client {
 }
 
 // Render renders the text with the GoConnects current data. It writes the output to the provided writer
-func (g *GoConnect) Render(text string, w io.Writer) error {
-	return util.Render(text, g.data, w)
+func (g *GoConnect) RenderTXT(text string, w io.Writer) error {
+	return tool.RenderTXT(text, g.data, w)
+}
+
+// Render renders the text with the GoConnects current data. It writes the output to the provided writer
+func (g *GoConnect) RenderHTML(text string, w io.Writer) error {
+	return tool.RenderHTML(text, g.data, w)
 }
 
 // JSON returns the GoConnects current data as JSON
 func (g *GoConnect) JSON() []byte {
-	return util.JSON(g.data)
+	return tool.MarshalJSON(g.data)
 }
 
 // YAML returns the GoConnects current data as YAML
 func (g *GoConnect) YAML() []byte {
-	return util.YAML(g.data)
+	return tool.MarshalYAML(g.data)
 }
 
 // XML returns the GoConnects current data as XML
 func (g *GoConnect) XML() []byte {
-	return util.XML(g.data)
-}
-
-// Validate validates the provided object and returns an error if invalid ref: https://github.com/go-playground/validator
-func (g *GoConnect) Validate(obj interface{}) error {
-	return util.Validate(obj)
+	return tool.MarshalXML(g.data)
 }
 
 // Data returns GoConnects current data as map[string]interface{}
@@ -160,7 +151,7 @@ func (g *GoConnect) Data() map[string]interface{} {
 
 // AddStructData appends the provided structs data to the GoConnects data
 func (g *GoConnect) AddStructData(obj interface{}) {
-	for k, v := range util.AsMap(obj) {
+	for k, v := range tool.ToMap(obj) {
 		g.data[k] = v
 	}
 }
@@ -180,52 +171,6 @@ func (g *GoConnect) MasterKey() []byte {
 	return []byte("secret")
 }
 
-// HashPassword uses bcrypt to hash a password string
-func (g *GoConnect) HashPassword(pass string) (string, error) {
-	return util.HashPassword(pass)
-}
-
-// CompareHashToPassWord uses bcrypt to compare the provided hash to the provided password
-func (g *GoConnect) CompareHashToPassword(hash, pass string) error {
-	return util.ComparePasswordToHash(hash, pass)
-}
-
-// WrapErr wraps the provided error with the provided message
-func (g *GoConnect) WrapErr(err error, msg string) error {
-	return util.WrapErr(err, msg)
-}
-
-// Provides UUID string. UUIDs are based on RFC 4122 and DCE 1.1: Authentication and Security Services.
-func (g *GoConnect) UUID() string {
-	return util.UUID()
-}
-
-// MustGetEnv returns the environmental variable found in the provided key. If no value is found, the provided default value is returned
-func (g *GoConnect) MustGetEnv(key string, defval string) string {
-	return util.MustGetEnv(key, defval)
-}
-
-// NewToken create a new JWT token from the provided claims
-func (g *GoConnect) NewToken(claims *MyCustomClaims) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	/* Sign the token with our secret */
-	return token.SignedString(g.MasterKey())
-}
-
-// ValidateToken will validate the token
-func (g *GoConnect) ValidateToken(myToken string) (bool, string) {
-	token, err := jwt.ParseWithClaims(myToken, &MyCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(g.MasterKey()), nil
-	})
-
-	if err != nil {
-		return false, ""
-	}
-
-	claims := token.Claims.(*MyCustomClaims)
-	return token.Valid, claims.Email
-}
-
 // A HandlerFuncFunc is a GoConnect Callback function handler
 type HandlerFunc func(g *GoConnect) error
 
@@ -238,4 +183,9 @@ func (g *GoConnect) Execute(fns ...HandlerFunc) error {
 		}
 	}
 	return err
+}
+
+func toPrettyJsonString(obj interface{}) string {
+	output, _ := json.MarshalIndent(obj, "", "  ")
+	return fmt.Sprintf("%s", output)
 }

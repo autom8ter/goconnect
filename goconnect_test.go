@@ -8,26 +8,33 @@ import (
 	"testing"
 )
 
-var ctx  = context.Background()
+var ctx = context.Background()
 var err error
 var g *goconnect.GoConnect
 
 func init() {
-	g, err = goconnect.New(ctx,  &goconnect.Config{
-		GCPCredsPath:  "credentials.json",
-		TwilioAccount: os.Getenv("TWILIO_ACCOUNT"),
-		TwilioToken:   os.Getenv("TWILIO_TOKEN"),
-		SendGridToken: os.Getenv("SENDGRID_TOKEN"),
-		StripeToken:   os.Getenv("STRIPE_TOKEN"),
+	g, err = goconnect.New(ctx, &goconnect.Config{
+		ProjectID:       os.Getenv("PROJECT_ID"),
+		JSONPath:        "credentials.json",
+		TwilioAccount:   os.Getenv("TWILIO_ACCOUNT"),
+		TwilioToken:     os.Getenv("TWILIO_TOKEN"),
+		SendGridAccount: os.Getenv("SENDGRID_ACCOUNT"),
+		SendGridToken:   os.Getenv("SENDGRID_TOKEN"),
+		StripeAccount:   os.Getenv("STRIPE_ACCOUNT"),
+		StripeToken:     os.Getenv("STRIPE_TOKEN"),
+		SlackAccount:    os.Getenv("SLACK_ACCOUNT"),
+		SlackToken:      os.Getenv("SLACK_TOKEN"),
+		Scopes:          []string{"users"},
+		InCluster:       false,
+		MasterKey:       os.Getenv("PROJECT_ID"),
 	})
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 }
 
-
 func TestNewFromEnv(t *testing.T) {
 	if g == nil {
-		log.Fatalln("nil goconnect")
+		t.Fatal("nil goconnect")
 	}
 }
