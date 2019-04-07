@@ -141,6 +141,8 @@ github.com/autom8ter/gcloud v0.0.0-20190407100510-159bd1308968 h1:tllwG07xWF9nZq
 github.com/autom8ter/gcloud v0.0.0-20190407100510-159bd1308968/go.mod h1:6DDNi19Pkh8PcLmFUHLnlpF4UOxal8jBoTiHqq8VHW4=
 github.com/autom8ter/gcloud v0.0.0-20190407100601-be2e45926e0a h1:3orQMcjfDyB6UmD0VnKmoL7CKmUnRDHdpnkqlLqMSy8=
 github.com/autom8ter/gcloud v0.0.0-20190407100601-be2e45926e0a/go.mod h1:6DDNi19Pkh8PcLmFUHLnlpF4UOxal8jBoTiHqq8VHW4=
+github.com/autom8ter/gcloud v0.0.0-20190407103633-47876e08e064 h1:SUFxmUqEe1sUxI2d8Z6nfQie3nakYtKWLM5CSTB/WhE=
+github.com/autom8ter/gcloud v0.0.0-20190407103633-47876e08e064/go.mod h1:tK0RYu917P/x4KQDRKSdMRxSRdbVlv4R6wVW7LStIVk=
 github.com/autom8ter/goconnect v0.0.0-20190402111924-9bd4e1dce7a1/go.mod h1:EIvngHX6RfNiyqwIQOzD6nmgDbLlQ/n3O/asMn4Wkxk=
 github.com/autom8ter/goconnect v0.0.0-20190405051018-77c8c8b1b6d2/go.mod h1:CX09D/MdQmYa+fiMMpplWoNGCeF64XmjEBxFE0jAeb4=
 github.com/autom8ter/gocrypt v0.0.0-20190401215419-4aacc403bd4d h1:UvcApbkNG9zyJR7pAStUKIYHiGk6vDxqg3q4CKoHhM4=
@@ -163,6 +165,8 @@ github.com/autom8ter/gosub v0.0.0-20190404052952-4275f750c402 h1:ZpMXxExMcPOkGxD
 github.com/autom8ter/gosub v0.0.0-20190404052952-4275f750c402/go.mod h1:gxHIqY6go0oUg38WC60YlwGXJvMPD3egxAZyl+kPHtQ=
 github.com/autom8ter/objectify v0.0.0-20190407094657-91bdd7133430 h1:Zco7QFG48tfpccyoMCS1dFnwhi+Iku/Ow6ikJwakffU=
 github.com/autom8ter/objectify v0.0.0-20190407094657-91bdd7133430/go.mod h1:s73VOKma8PH+o1xgp0R3PwIQTNAorPTH7xSugdrUB4o=
+github.com/autom8ter/objectify v0.0.0-20190407102447-e8d21d988edc h1:4Qsv0AWZPLOuxI9xHSqwoLW/sGht6f1TGR3uharTh8M=
+github.com/autom8ter/objectify v0.0.0-20190407102447-e8d21d988edc/go.mod h1:EAzDHsLulh41WBS3lcJgenwdK21Ep+/KqiiGvWC/lCQ=
 github.com/autom8ter/plugins v0.0.0-20190328210842-acc38ebe8466/go.mod h1:p9lcaqU+mP6mqsbYJP9TWY5FDzxKxPWQfMvEb09OwzY=
 github.com/autom8ter/util v0.0.0-20190315143019-1ab48ff7769b h1:9/xdefJqW1AlO2awvgxCFPnJjg1m8TO5EzdSk/B0oFU=
 github.com/autom8ter/util v0.0.0-20190315143019-1ab48ff7769b/go.mod h1:2h8US+tG3Wg9A68c4Io0aKdc506t3QyphvcRhvp8p1Q=
