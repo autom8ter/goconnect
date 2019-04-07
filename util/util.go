@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"encoding/xml"
 	"github.com/Masterminds/sprig"
@@ -15,10 +16,24 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 )
+
+func ReadAsCSV(val string) ([]string, error) {
+	if val == "" {
+		return []string{}, nil
+	}
+	stringReader := strings.NewReader(val)
+	csvReader := csv.NewReader(stringReader)
+	return csvReader.Read()
+}
 
 func WrapErr(err error, msg string) error {
 	return errors.WithStack(errors.Wrap(err, msg))
+}
+
+func PrintErr(err error, msg string) {
+	log.Println(errors.WithStack(errors.Wrap(err, msg)))
 }
 
 func UUID() string {

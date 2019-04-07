@@ -11,37 +11,37 @@ import (
 	"github.com/sfreiberg/gotwilio"
 	"github.com/stripe/stripe-go"
 	"github.com/stripe/stripe-go/client"
-	"google.golang.org/api/option"
 	"io"
 	"net/http"
 )
 
 //Config holds the required configuration variables to create a GoConnect Instance
 type Config struct {
-	GCPCredsPath    string   `json:"firebase_creds_path"`
-	TwilioAccount   string   `json:"twilio_account"`
-	TwilioToken     string   `json:"twilio_token"`
-	SendGridAccount string   `json:"sendgrid_account"`
-	SendGridToken   string   `json:"sendgrid_token"`
-	StripeAccount   string   `json:"stripe_account"`
-	StripeToken     string   `json:"stripe_token"`
-	SlackAccount    string   `json:"slack_account"`
-	SlackToken      string   `json:"slack_token"`
-	Scopes          []string `json:"scopes"`
-	MasterKey       string   `json:"master_key"`
+	GCPProjectID    string   `validate:"required"`
+	GCPCredsPath    string   `validate:"required"`
+	TwilioAccount   string   `validate:"required"`
+	TwilioToken     string   `validate:"required"`
+	SendGridAccount string   `validate:"required"`
+	SendGridToken   string   `validate:"required"`
+	StripeAccount   string   `validate:"required"`
+	StripeToken     string   `validate:"required"`
+	SlackAccount    string   `validate:"required"`
+	SlackToken      string   `validate:"required"`
+	Scopes          []string `validate:"required"`
+	InCluster       bool
+	MasterKey       string `validate:"required"`
 }
 
 // GoConnect holds an authenticated Twilio, Stripe, Firebase, and SendGrid Client. It also carries an HTTP client and context.
 type GoConnect struct {
-	ctx   context.Context
-	cfg   *Config
-	twil  *gotwilio.Twilio
-	grid  *sendgrid.Client
-	strip *client.API
-	chat  *slack.Client
-	gcp   *gcloud.GCP
-	cli   *http.Client
-	data  map[string]interface{}
+	ctx   context.Context        `validate:"required"`
+	cfg   *Config                `validate:"required"`
+	twil  *gotwilio.Twilio       `validate:"required"`
+	grid  *sendgrid.Client       `validate:"required"`
+	strip *client.API            `validate:"required"`
+	chat  *slack.Client          `validate:"required"`
+	gcp   *gcloud.GCP            `validate:"required"`
+	data  map[string]interface{} `validate:"required"`
 }
 
 type MyCustomClaims struct {
@@ -53,23 +53,40 @@ type MyCustomClaims struct {
 
 // New Creates a new GoConnect from the provided http client and config
 func New(ctx context.Context, c *Config) (*GoConnect, error) {
+	if err := util.Validate(c); err != nil {
+		return nil, err
+	}
 	g := &GoConnect{}
 	var err error
 	g.ctx = ctx
 	g.cfg = c
-	g.gcp, err = gcloud.New(ctx, option.WithCredentialsFile(c.GCPCredsPath))
+	g.gcp, err = gcloud.New(ctx, &gcloud.Config{
+		Project:   c.GCPProjectID,
+		Scopes:    c.Scopes,
+		InCluster: false,
+		SpannerDB: "",
+		Options:   nil,
+	})
+	err = g.gcp.WithClients()
+	if err != nil {
+		return g, util.WrapErr(err, "failed to add GCP clients")
+	}
+	err = g.gcp.WithServices()
+	if err != nil {
+		return g, util.WrapErr(err, "failed to add GCP services")
+	}
 	if err != nil {
 		err = util.WrapErr(err, "failed to create gcloud client")
 	}
-	g.cli, err = g.gcp.DefaultClient(ctx, c.Scopes)
 	if err != nil {
 		err = util.WrapErr(err, "failed to create http client from config scopes")
 	}
 	g.chat = slack.New(c.SlackToken)
-	g.twil = gotwilio.NewTwilioClientCustomHTTP(c.TwilioAccount, c.TwilioToken, g.cli)
-	g.strip = client.New(c.StripeToken, stripe.NewBackends(g.cli))
+	g.twil = gotwilio.NewTwilioClientCustomHTTP(c.TwilioAccount, c.TwilioToken, g.HTTP())
+	g.strip = client.New(c.StripeToken, stripe.NewBackends(g.HTTP()))
 	g.grid = sendgrid.NewSendClient(c.SendGridToken)
 	g.data = make(map[string]interface{})
+	err = util.Validate(g)
 	if err != nil {
 		return g, err
 	}
@@ -108,7 +125,7 @@ func (g *GoConnect) Slack() *slack.Client {
 
 // HTTP returns an HTTP client
 func (g *GoConnect) HTTP() *http.Client {
-	return g.cli
+	return g.gcp.HTTP()
 }
 
 // Render renders the text with the GoConnects current data. It writes the output to the provided writer
@@ -209,11 +226,11 @@ func (g *GoConnect) ValidateToken(myToken string) (bool, string) {
 	return token.Valid, claims.Email
 }
 
-// A Func is a GoConnect Callback function
-type Func func(g *GoConnect) error
+// A HandlerFuncFunc is a GoConnect Callback function handler
+type HandlerFunc func(g *GoConnect) error
 
 // Execute runs the provided functions.
-func (g *GoConnect) Execute(fns ...Func) error {
+func (g *GoConnect) Execute(fns ...HandlerFunc) error {
 	var err error
 	for _, f := range fns {
 		if newErr := f(g); newErr != nil {

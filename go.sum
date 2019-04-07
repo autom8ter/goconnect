@@ -127,6 +127,8 @@ github.com/autom8ter/engine v0.0.0-20190329053011-dc0f5aa62cf8 h1:rue0AIDP+MxVbj
 github.com/autom8ter/engine v0.0.0-20190329053011-dc0f5aa62cf8/go.mod h1:PIsTY8ubldNMmXiHVE4GwgPwA0AxrCv5wAr6RfcXKCk=
 github.com/autom8ter/gcloud v0.0.0-20190405045739-7cb869700bc9 h1:gjQCArZfpLrqGSEXQ8Ny30sVMUaHC3eYWVDXCCp+/1g=
 github.com/autom8ter/gcloud v0.0.0-20190405045739-7cb869700bc9/go.mod h1:WV5v80gZAvGQTbvVDIcsxUfCL2mwYZwEjBOgaNlryDQ=
+github.com/autom8ter/gcloud v0.0.0-20190407063728-86f7961fa452 h1:yAI6ZqkYqAWnsvSv0hONQfikrev6J3STyhkztVo97eg=
+github.com/autom8ter/gcloud v0.0.0-20190407063728-86f7961fa452/go.mod h1:sq9gr77+26SXZVAcIeJkWqa/Vi4xhkoagCIw6G4iJOM=
 github.com/autom8ter/goconnect v0.0.0-20190402111924-9bd4e1dce7a1/go.mod h1:EIvngHX6RfNiyqwIQOzD6nmgDbLlQ/n3O/asMn4Wkxk=
 github.com/autom8ter/goconnect v0.0.0-20190405051018-77c8c8b1b6d2/go.mod h1:CX09D/MdQmYa+fiMMpplWoNGCeF64XmjEBxFE0jAeb4=
 github.com/autom8ter/gocrypt v0.0.0-20190401215419-4aacc403bd4d h1:UvcApbkNG9zyJR7pAStUKIYHiGk6vDxqg3q4CKoHhM4=
@@ -310,6 +312,8 @@ github.com/googleapis/gax-go/v2 v2.0.4 h1:hU4mGcQI4DaAYW+IbTun+2qEZVFxK0ySjQLTbS
 github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+vpHVxEJEs9eg=
 github.com/googleapis/gnostic v0.2.0 h1:l6N3VoaVzTncYYW+9yOz2LJJammFZGBO13sqgEhpy9g=
 github.com/googleapis/gnostic v0.2.0/go.mod h1:sJBsCZ4ayReDTBIg8b9dl28c5xFWyhBTVRp3pOg5EKY=
+github.com/googlemaps/google-maps-services-go v0.0.0-20190311183511-743053230cec h1:+KopreQOGui/P3CmC8LoyDQOMKwR8LKrA0+GTERefOU=
+github.com/googlemaps/google-maps-services-go v0.0.0-20190311183511-743053230cec/go.mod h1:hq0xuxd0EXLLoslflvfelRcwT1Y4vAkX20tpCH77ZPg=
 github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
 github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
 github.com/gopherjs/gopherjs v0.0.0-20190309154008-847fc94819f9/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
@@ -824,6 +828,10 @@ google.golang.org/grpc v1.17.0/go.mod h1:6QZJwpn2B+Zp71q/5VxRsJ6NXXVCE5NRUHRo+f3
 google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
 google.golang.org/grpc v1.19.1 h1:TrBcJ1yqAl1G++wO39nD/qtgpsW9/1+QGrluyMGEYgM=
 google.golang.org/grpc v1.19.1/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
+googlemaps.github.io/maps v0.0.0-20190311183511-743053230cec h1:zqd4aMgQfDDKdTlw0A/NiIX0Ndat/2sl+X3hI1hRsS0=
+googlemaps.github.io/maps v0.0.0-20190311183511-743053230cec/go.mod h1:skwIRP56b3wXI7uVor5+NBjKLuQ3WXPpUvSKq4k7luo=
+googlemaps.github.io/maps/internal v0.0.0-20190311183511-743053230cec h1:GU0DtrGEaC3ETIAHAmMjdY7BqFGEcVy6O3q0BnhCe2w=
+googlemaps.github.io/maps/internal v0.0.0-20190311183511-743053230cec/go.mod h1:fpuL7EcHKWTZ0dUSOsmQYHKVb3MFuGbxiN1Arn7Exik=
 gopkg.in/VividCortex/ewma.v1 v1.1.1/go.mod h1:TekXuFipeiHWiAlO1+wSS23vTcyFau5u3rxXUSXj710=
 gopkg.in/alecthomas/kingpin.v2 v2.2.6/go.mod h1:FMv+mEhP44yOT+4EoQTLFTRgOQ1FBLkstjWtayDeSgw=
 gopkg.in/asn1-ber.v1 v1.0.0-20170511165959-379148ca0225/go.mod h1:cuepJuh7vyXfUyUwEgHQXw849cJrilpS5NeIjOWESAw=
