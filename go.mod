@@ -2,7 +2,7 @@ module github.com/autom8ter/goconnect
 
 require (
 	github.com/autom8ter/commander v0.0.0-20190403035737-5d09bd7cace9 // indirect
-	github.com/autom8ter/gcloud v0.0.0-20190407081444-3c41697d83d9
+	github.com/autom8ter/gcloud v0.0.0-20190407100601-be2e45926e0a
 	github.com/autom8ter/goflix v0.0.0-20190405032258-57789c77b011 // indirect
 	github.com/autom8ter/gosaas v0.0.0-20190407022111-b15e0670f7dc // indirect
 	github.com/autom8ter/objectify v0.0.0-20190407094657-91bdd7133430

@@ -135,6 +135,12 @@ github.com/autom8ter/gcloud v0.0.0-20190407075125-88e8b818b4e0 h1:grbA0epTgkCUfV
 github.com/autom8ter/gcloud v0.0.0-20190407075125-88e8b818b4e0/go.mod h1:fio+GhzliP+VYErrAWAZT7OwNX5LvjSBn4ztC8l1ElE=
 github.com/autom8ter/gcloud v0.0.0-20190407081444-3c41697d83d9 h1:qYelMh4cZ/grr8APng5MG7h5NP/btFRHunpqKGGSplg=
 github.com/autom8ter/gcloud v0.0.0-20190407081444-3c41697d83d9/go.mod h1:PYJN4lLwFEbd1dBFjOa0z39yYSdVbztaIhLJQVUqOQ0=
+github.com/autom8ter/gcloud v0.0.0-20190407095518-903a4cb2efe2 h1:hIuw1yDnMgdB3rdPMqzWEjF+Hsslkwswe6eYtY2bprU=
+github.com/autom8ter/gcloud v0.0.0-20190407095518-903a4cb2efe2/go.mod h1:6DDNi19Pkh8PcLmFUHLnlpF4UOxal8jBoTiHqq8VHW4=
+github.com/autom8ter/gcloud v0.0.0-20190407100510-159bd1308968 h1:tllwG07xWF9nZqNmL7e+fZr8dRTXeezo5UM0fXII9qk=
+github.com/autom8ter/gcloud v0.0.0-20190407100510-159bd1308968/go.mod h1:6DDNi19Pkh8PcLmFUHLnlpF4UOxal8jBoTiHqq8VHW4=
+github.com/autom8ter/gcloud v0.0.0-20190407100601-be2e45926e0a h1:3orQMcjfDyB6UmD0VnKmoL7CKmUnRDHdpnkqlLqMSy8=
+github.com/autom8ter/gcloud v0.0.0-20190407100601-be2e45926e0a/go.mod h1:6DDNi19Pkh8PcLmFUHLnlpF4UOxal8jBoTiHqq8VHW4=
 github.com/autom8ter/goconnect v0.0.0-20190402111924-9bd4e1dce7a1/go.mod h1:EIvngHX6RfNiyqwIQOzD6nmgDbLlQ/n3O/asMn4Wkxk=
 github.com/autom8ter/goconnect v0.0.0-20190405051018-77c8c8b1b6d2/go.mod h1:CX09D/MdQmYa+fiMMpplWoNGCeF64XmjEBxFE0jAeb4=
 github.com/autom8ter/gocrypt v0.0.0-20190401215419-4aacc403bd4d h1:UvcApbkNG9zyJR7pAStUKIYHiGk6vDxqg3q4CKoHhM4=
