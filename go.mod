@@ -1,6 +1,7 @@
 module github.com/autom8ter/goconnect
 
 require (
+	cloud.google.com/go v0.37.2
 	github.com/autom8ter/commander v0.0.0-20190403035737-5d09bd7cace9 // indirect
 	github.com/autom8ter/gcloud v0.0.0-20190407103633-47876e08e064
 	github.com/autom8ter/goflix v0.0.0-20190405032258-57789c77b011 // indirect

@@ -13,6 +13,17 @@ import (
 var ctx = context.Background()
 var tool = objectify.New()
 
+type TestDoc struct {
+	Content map[string]interface{}
+	Results map[string]interface{}
+}
+
+var Doc = &TestDoc{
+	Content: map[string]interface{}{
+		"translate": []string{"Hello World!"},
+	},
+}
+
 func Test(t *testing.T) {
 	var err error
 	g, err := goconnect.New(ctx, &goconnect.Config{
@@ -44,18 +55,18 @@ func Test(t *testing.T) {
 	}
 	f := g.GCP().Clients().FireStore
 	doc := f.Collection("test").Doc(tool.UUID())
-	type Data struct {
-		String string
-	}
 
-	d := &Data{}
 	bits, err := ioutil.ReadFile("credentials.json")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
-	d.String = string(bits)
-	resp, err := doc.Create(ctx, tool.ToMap(d))
+	Doc.Content["credentials"] = string(bits)
 
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	resp, err := doc.Create(ctx, tool.ToMap(Doc))
 	if err != nil {
 		t.Fatal(err.Error())
 	}

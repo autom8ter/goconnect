@@ -70,14 +70,14 @@ func New(ctx context.Context, c *Config) (*GoConnect, error) {
 	grid := sendgrid.NewSendClient(c.SendGridToken)
 	data := make(map[string]interface{})
 	g := &GoConnect{
-		ctx:   	ctx,
-		cfg:   	c,
-		gcp: 	gcp,
-		twil:  	twil,
-		grid:  	grid,
-		chat:  	chat,
-		strip: 	strip,
-		data:  	data,
+		ctx:   ctx,
+		cfg:   c,
+		gcp:   gcp,
+		twil:  twil,
+		grid:  grid,
+		chat:  chat,
+		strip: strip,
+		data:  data,
 	}
 	if err := tool.Validate(g); err != nil {
 		panic(err.Error())
