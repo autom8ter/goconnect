@@ -14,7 +14,7 @@ type GoConnect struct {
 	TwilioToken     string      `validate:"required"`
 	SendGridAccount string
 	SendGridToken   string `validate:"required"`
-	StripeAccount   string `validate:"required"`
+	StripeAccount   string
 	StripeToken     string `validate:"required"`
 	SlackAccount    string
 	SlackToken      string `validate:"required"`
