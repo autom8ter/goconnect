@@ -149,6 +149,8 @@ github.com/autom8ter/gcloud v0.0.0-20190408000259-fa149a26c3b2 h1:sOe+G5/4Qmji0Z
 github.com/autom8ter/gcloud v0.0.0-20190408000259-fa149a26c3b2/go.mod h1:tK0RYu917P/x4KQDRKSdMRxSRdbVlv4R6wVW7LStIVk=
 github.com/autom8ter/gcloud v0.0.0-20190408035450-7095d943e212 h1:xa+Vq0KQ6fOWHF7jv1NtyxtJ/xFeoGZBhXyzHnapsvY=
 github.com/autom8ter/gcloud v0.0.0-20190408035450-7095d943e212/go.mod h1:tK0RYu917P/x4KQDRKSdMRxSRdbVlv4R6wVW7LStIVk=
+github.com/autom8ter/gcloud v0.0.0-20190408073117-8b7a9496ac0d h1:ojw06rxJq3DZbuLNTqNXZfZA404B0xfcWwxtyAgTCb4=
+github.com/autom8ter/gcloud v0.0.0-20190408073117-8b7a9496ac0d/go.mod h1:Hb/MgbCi+SaG4fi5txfqEkwooaNpxENTv96kNqiNbx0=
 github.com/autom8ter/goconnect v0.0.0-20190402111924-9bd4e1dce7a1/go.mod h1:EIvngHX6RfNiyqwIQOzD6nmgDbLlQ/n3O/asMn4Wkxk=
 github.com/autom8ter/goconnect v0.0.0-20190405051018-77c8c8b1b6d2/go.mod h1:CX09D/MdQmYa+fiMMpplWoNGCeF64XmjEBxFE0jAeb4=
 github.com/autom8ter/gocrypt v0.0.0-20190401215419-4aacc403bd4d h1:UvcApbkNG9zyJR7pAStUKIYHiGk6vDxqg3q4CKoHhM4=
@@ -161,6 +163,8 @@ github.com/autom8ter/gosaas v0.0.0-20190403043001-2edc013f8640 h1:QhVhbu2VV+lISU
 github.com/autom8ter/gosaas v0.0.0-20190403043001-2edc013f8640/go.mod h1:1J9I+EIVyUGprWvcz1Y+9SApcCHl7QRtyj6Qgzd+4hE=
 github.com/autom8ter/gosaas v0.0.0-20190407022111-b15e0670f7dc h1:+uxaI+Xy//LRs2B44HKplOZqnaBXa8GSux7ly7NW+8A=
 github.com/autom8ter/gosaas v0.0.0-20190407022111-b15e0670f7dc/go.mod h1:tNBgVO2WwJN7SMAd8nOH5MKPhNwlfDWpwybSyZcBJC0=
+github.com/autom8ter/gosaas v0.0.0-20190408094412-0183b467159f h1:N9Qc0VwIOfbxHbt0f7vW1a3rYXkzbJYJgHNIH3vK2DM=
+github.com/autom8ter/gosaas v0.0.0-20190408094412-0183b467159f/go.mod h1:MKAvW3/C+3vL6ik7E3WxEjXQAphr5fUHE34FTowrZcI=
 github.com/autom8ter/gosdk v0.0.0-20190401043200-737af3c84563 h1:wzqfWFUmg6CWGun8Ro9DopRpz96SU0mB2yjO22nkLXw=
 github.com/autom8ter/gosdk v0.0.0-20190401043200-737af3c84563/go.mod h1:KIzT0QImWjerCexJfkqp2HjqGGAG/DvjqQXKMcNzNo4=
 github.com/autom8ter/gosub v0.0.0-20190403062719-4b06f7d3c5e3 h1:4/p/v8RBBqkKaxcJK5zZntR6HRwgmVbEqRe8C1DTjfw=

@@ -10,7 +10,7 @@ import (
 	"log"
 )
 
-// server is used to implement helloworld.GreeterServer.
+// Server is used to implement helloworld.GreeterServer.
 type Server struct {
 	g *goconnect.GoConnect
 }
@@ -31,7 +31,17 @@ func (s *Server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 	return &pb.HelloReply{Message: resp[0].Text}, nil
 }
 
-func EchoService() goconnect.PluginFunc {
+func GreeterService() goconnect.PluginFunc {
+	return func(g *goconnect.GoConnect) driver.PluginFunc {
+		return func(s *grpc.Server) {
+			pb.RegisterGreeterServer(s, &Server{
+				g,
+			})
+		}
+	}
+}
+
+func TranslationService() goconnect.PluginFunc {
 	return func(g *goconnect.GoConnect) driver.PluginFunc {
 		return func(s *grpc.Server) {
 			pb.RegisterGreeterServer(s, &Server{
