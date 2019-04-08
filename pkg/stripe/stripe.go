@@ -23,8 +23,32 @@ func (s *Stripe) GetPlan(id string, params *stripe.PlanParams) (*stripe.Plan, er
 	return s.client.Plans.Get(id, params)
 }
 
+func (s *Stripe) UpdatePlan(id string, params *stripe.PlanParams) (*stripe.Plan, error) {
+	return s.client.Plans.Update(id, params)
+}
+
+func (s *Stripe) DeletePlan(id string, params *stripe.PlanParams) (*stripe.Plan, error) {
+	return s.client.Plans.Del(id, params)
+}
+
+func (s *Stripe) NewPlan(params *stripe.PlanParams) (*stripe.Plan, error) {
+	return s.client.Plans.New(params)
+}
+
 func (s *Stripe) GetCustomer(id string, params *stripe.CustomerParams) (*stripe.Customer, error) {
 	return s.client.Customers.Get(id, params)
+}
+
+func (s *Stripe) UpdateCustomer(id string, params *stripe.CustomerParams) (*stripe.Customer, error) {
+	return s.client.Customers.Update(id, params)
+}
+
+func (s *Stripe) DeleteCustomer(id string, params *stripe.CustomerParams) (*stripe.Customer, error) {
+	return s.client.Customers.Del(id, params)
+}
+
+func (s *Stripe) NewCustomer(params *stripe.CustomerParams) (*stripe.Customer, error) {
+	return s.client.Customers.New(params)
 }
 
 func (s *Stripe) GetCharge(id string, params *stripe.ChargeParams) (*stripe.Charge, error) {
