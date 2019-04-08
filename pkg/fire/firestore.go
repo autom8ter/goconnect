@@ -1,17 +1,29 @@
-package accounts
+package fire
 
 import (
 	"cloud.google.com/go/firestore"
 	"context"
-	"github.com/autom8ter/gosaas/pkg/util"
 	"github.com/autom8ter/gosaas/sdk/go/proto/accounts"
 	"github.com/autom8ter/gosaas/sdk/go/proto/contacts"
+	"github.com/autom8ter/objectify"
 	"github.com/pkg/errors"
 )
 
-func Create(ctx context.Context, r *accounts.CreateAccountRequest, client *firestore.Client) error {
+var util = objectify.New()
+
+type GoogleFireStore struct {
+	fire *firestore.Client
+}
+
+func New(fire *firestore.Client) *GoogleFireStore {
+	return &GoogleFireStore{
+		fire: fire,
+	}
+}
+
+func (g *GoogleFireStore) CreateAccount(ctx context.Context, r *accounts.CreateAccountRequest) error {
 	notes := make(map[string]string)
-	snap := client.Collection("accounts").Doc(r.User.Email)
+	snap := g.fire.Collection("accounts").Doc(r.User.Email)
 	acc := &accounts.Account{
 		User: &contacts.Contact{
 			Name:        r.User.Name,
@@ -36,8 +48,8 @@ func Create(ctx context.Context, r *accounts.CreateAccountRequest, client *fires
 	return nil
 }
 
-func Read(ctx context.Context, email string, client *firestore.Client) (*accounts.Account, error) {
-	snap, err := client.Collection("accounts").Doc(email).Get(ctx)
+func (g *GoogleFireStore) ReadAccount(ctx context.Context, email string) (*accounts.Account, error) {
+	snap, err := g.fire.Collection("accounts").Doc(email).Get(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -49,8 +61,8 @@ func Read(ctx context.Context, email string, client *firestore.Client) (*account
 	return acc, nil
 }
 
-func List(ctx context.Context, client *firestore.Client) ([]*accounts.Account, error) {
-	coll := client.Collection("accounts")
+func (g *GoogleFireStore) ListAccounts(ctx context.Context) ([]*accounts.Account, error) {
+	coll := g.fire.Collection("accounts")
 	snaps, err := coll.Documents(ctx).GetAll()
 	if err != nil {
 		return nil, err
@@ -66,23 +78,23 @@ func List(ctx context.Context, client *firestore.Client) ([]*accounts.Account, e
 	return accs, nil
 }
 
-func Update(ctx context.Context, a *accounts.Account, client *firestore.Client) error {
+func (g *GoogleFireStore) UpdateAccount(ctx context.Context, a *accounts.Account) error {
 	updates := []firestore.Update{}
-	for k, v := range util.AsMap(a) {
+	for k, v := range util.ToMap(a) {
 		updates = append(updates, firestore.Update{
 			Path:  k,
 			Value: v,
 		})
 	}
-	_, err := client.Collection("accounts").Doc(a.User.Email).Update(ctx, updates)
+	_, err := g.fire.Collection("accounts").Doc(a.User.Email).Update(ctx, updates)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func Delete(ctx context.Context, email string, client *firestore.Client) error {
-	_, err := client.Collection("accounts").Doc(email).Delete(ctx)
+func (g *GoogleFireStore) DeleteAccount(ctx context.Context, email string) error {
+	_, err := g.fire.Collection("accounts").Doc(email).Delete(ctx)
 	if err != nil {
 		return err
 	}
@@ -90,8 +102,8 @@ func Delete(ctx context.Context, email string, client *firestore.Client) error {
 	return nil
 }
 
-func Exists(ctx context.Context, email string, client *firestore.Client) (bool, error) {
-	acc := client.Collection("accounts")
+func (g *GoogleFireStore) AccountExists(ctx context.Context, email string) (bool, error) {
+	acc := g.fire.Collection("accounts")
 	docs := acc.Documents(ctx)
 	allDocs, err := docs.GetAll()
 	if err != nil {
@@ -105,16 +117,16 @@ func Exists(ctx context.Context, email string, client *firestore.Client) (bool, 
 	return false, nil
 }
 
-func RecoverToken(ctx context.Context, email string, client *firestore.Client) (string, error) {
-	acc, err := Read(ctx, email, client)
+func (g *GoogleFireStore) RecoverToken(ctx context.Context, email string) (string, error) {
+	acc, err := g.ReadAccount(ctx, email)
 	if err != nil {
 		return "", err
 	}
 	return acc.RecoveryToken, nil
 }
 
-func ResetPassword(ctx context.Context, email, token, newPass string, client *firestore.Client) error {
-	acc, err := Read(ctx, email, client)
+func (g *GoogleFireStore) ResetPassword(ctx context.Context, email, token, newPass string) error {
+	acc, err := g.ReadAccount(ctx, email)
 	if err != nil {
 		return err
 	}
@@ -126,7 +138,7 @@ func ResetPassword(ctx context.Context, email, token, newPass string, client *fi
 		return err
 	}
 	acc.HashedPassword = hash
-	err = Update(ctx, acc, client)
+	err = g.UpdateAccount(ctx, acc)
 	if err != nil {
 		return err
 	}

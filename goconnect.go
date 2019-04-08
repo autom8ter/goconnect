@@ -1,9 +1,6 @@
 package goconnect
 
 import (
-	"github.com/autom8ter/engine"
-	"github.com/autom8ter/engine/config"
-	"github.com/autom8ter/engine/driver"
 	"github.com/autom8ter/gcloud"
 	"github.com/autom8ter/objectify"
 	"github.com/sendgrid/sendgrid-go"
@@ -86,22 +83,4 @@ func (g *GoConnect) Stripe(client *http.Client) *cli.API {
 func (g *GoConnect) Gcloud() *gcloud.GCP {
 	tool.PanicIfNil(g.GCP)
 	return g.GCP
-}
-
-// PluginFunc is a callback function that takes a GoConnect instance and returns a function that is used to create and register a grpc service.
-// It is used in the GoConnect Serve() method.
-type PluginFunc func(g *GoConnect) driver.PluginFunc
-
-// Serve starts a grpc Engine ref:github.com/autom8ter/engine  server with a default middleware stack on the specified address with the provided pluugin functions.
-func (g *GoConnect) Serve(addr string, fns ...PluginFunc) error {
-	tool.PanicIfNil(g)
-	plugs := []driver.Plugin{}
-	for _, v := range fns {
-		plugs = append(plugs, v(g))
-	}
-	return engine.New("tcp", addr, true).With(
-		config.WithDefaultMiddlewares(),
-		config.WithDefaultPlugins(),
-		config.WithPlugins(plugs...),
-	).Serve()
 }

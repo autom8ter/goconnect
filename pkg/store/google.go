@@ -3,7 +3,7 @@ package store
 import (
 	gstorage "cloud.google.com/go/storage"
 	"context"
-	"github.com/autom8ter/gosaas/pkg/store/driver"
+	"github.com/autom8ter/goconnect/pkg/store/driver"
 )
 
 type GoogleCloudStorage struct {
