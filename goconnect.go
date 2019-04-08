@@ -1,9 +1,11 @@
 package goconnect
 
 import (
+	"github.com/autom8ter/engine"
+	"github.com/autom8ter/engine/config"
+	"github.com/autom8ter/engine/driver"
 	"github.com/autom8ter/gcloud"
 	"github.com/autom8ter/objectify"
-	"github.com/pkg/errors"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sfreiberg/gotwilio"
 	"github.com/stripe/stripe-go"
@@ -80,16 +82,19 @@ func (g *GoConnect) Gcloud() *gcloud.GCP {
 	return g.GCP
 }
 
-// A HandlerFuncFunc is a GoConnect Callback function handler
-type HandlerFunc func(g *GoConnect) error
+// PluginFunc is a callback function that takes a GoConnect instance and returns a function that is used to create and register a grpc service.
+// It is used in the GoConnect Serve() method.
+type PluginFunc func(g *GoConnect) driver.PluginFunc
 
-// Execute runs the provided functions.
-func (g *GoConnect) Execute(fns ...HandlerFunc) error {
-	var err error
-	for _, f := range fns {
-		if newErr := f(g); newErr != nil {
-			err = errors.Wrap(err, newErr.Error())
-		}
+// Serve starts a grpc Engine ref:github.com/autom8ter/engine  server with a default middleware stack on the specified address with the provided pluugin functions.
+func (g *GoConnect) Serve(addr string, fns ...PluginFunc) error {
+	plugs := []driver.Plugin{}
+	for _, v := range fns {
+		plugs = append(plugs, v(g))
 	}
-	return err
+	return engine.New("tcp", addr, true).With(
+		config.WithDefaultMiddlewares(),
+		config.WithDefaultPlugins(),
+		config.WithPlugins(plugs...),
+	).Serve()
 }
