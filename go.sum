@@ -125,6 +125,8 @@ github.com/autom8ter/commander v0.0.0-20190403035737-5d09bd7cace9/go.mod h1:K+Hu
 github.com/autom8ter/engine v0.0.0-20190325180916-6930731bb360/go.mod h1:PIsTY8ubldNMmXiHVE4GwgPwA0AxrCv5wAr6RfcXKCk=
 github.com/autom8ter/engine v0.0.0-20190329053011-dc0f5aa62cf8 h1:rue0AIDP+MxVbje+Hi4ePGjuyh1+3L3OJJNkkmkLG1Q=
 github.com/autom8ter/engine v0.0.0-20190329053011-dc0f5aa62cf8/go.mod h1:PIsTY8ubldNMmXiHVE4GwgPwA0AxrCv5wAr6RfcXKCk=
+github.com/autom8ter/engine v0.0.0-20190408072237-fc31dfcf0858 h1:jMtzlzMYmj/rRVrcqhQbMdmJmPeWtuCOSQihmEqbi/g=
+github.com/autom8ter/engine v0.0.0-20190408072237-fc31dfcf0858/go.mod h1:7C0DBloGgbNPAjww9WtAcIh+DcjxqfWVTAF1l1+Ycss=
 github.com/autom8ter/gcloud v0.0.0-20190405045739-7cb869700bc9 h1:gjQCArZfpLrqGSEXQ8Ny30sVMUaHC3eYWVDXCCp+/1g=
 github.com/autom8ter/gcloud v0.0.0-20190405045739-7cb869700bc9/go.mod h1:WV5v80gZAvGQTbvVDIcsxUfCL2mwYZwEjBOgaNlryDQ=
 github.com/autom8ter/gcloud v0.0.0-20190407063728-86f7961fa452 h1:yAI6ZqkYqAWnsvSv0hONQfikrev6J3STyhkztVo97eg=
@@ -173,6 +175,9 @@ github.com/autom8ter/objectify v0.0.0-20190407102447-e8d21d988edc h1:4Qsv0AWZPLO
 github.com/autom8ter/objectify v0.0.0-20190407102447-e8d21d988edc/go.mod h1:EAzDHsLulh41WBS3lcJgenwdK21Ep+/KqiiGvWC/lCQ=
 github.com/autom8ter/objectify v0.0.0-20190407122444-5ac369f8adef h1:6NRS1hRccaE8xTBlhSVpWxLToMqaIjmDLDta+ByA0L8=
 github.com/autom8ter/objectify v0.0.0-20190407122444-5ac369f8adef/go.mod h1:EAzDHsLulh41WBS3lcJgenwdK21Ep+/KqiiGvWC/lCQ=
+github.com/autom8ter/objectify v0.0.0-20190408065719-a9ebead75a53/go.mod h1:EAzDHsLulh41WBS3lcJgenwdK21Ep+/KqiiGvWC/lCQ=
+github.com/autom8ter/objectify v0.0.0-20190408071719-79ea764cf5ba h1:Cf5IFm0SvjVshJN+H90SkNNZi0PlKiPLeUFnpHqLn7c=
+github.com/autom8ter/objectify v0.0.0-20190408071719-79ea764cf5ba/go.mod h1:EAzDHsLulh41WBS3lcJgenwdK21Ep+/KqiiGvWC/lCQ=
 github.com/autom8ter/plugins v0.0.0-20190328210842-acc38ebe8466/go.mod h1:p9lcaqU+mP6mqsbYJP9TWY5FDzxKxPWQfMvEb09OwzY=
 github.com/autom8ter/util v0.0.0-20190315143019-1ab48ff7769b h1:9/xdefJqW1AlO2awvgxCFPnJjg1m8TO5EzdSk/B0oFU=
 github.com/autom8ter/util v0.0.0-20190315143019-1ab48ff7769b/go.mod h1:2h8US+tG3Wg9A68c4Io0aKdc506t3QyphvcRhvp8p1Q=

@@ -54,31 +54,37 @@ func NewFromFileEnv(file string) *GoConnect {
 
 // Init returns an error if any of the required fields are nil
 func (g *GoConnect) Init() error {
+	tool.PanicIfNil(g)
 	return tool.Validate(g)
 }
 
 // ToMap returns the GoConnect config as a map
 func (g *GoConnect) ToMap() map[string]interface{} {
+	tool.PanicIfNil(g)
 	return tool.ToMap(g)
 }
 
 // Twilio returns an authenticated Twilio client
 func (g *GoConnect) Twilio() *gotwilio.Twilio {
+	tool.PanicIfNil(g)
 	return gotwilio.NewTwilioClient(g.TwilioAccount, g.TwilioToken)
 }
 
 // SendGrid returns an authenticated SendGrid client
 func (g *GoConnect) SendGrid() *sendgrid.Client {
+	tool.PanicIfNil(g)
 	return sendgrid.NewSendClient(g.SendGridToken)
 }
 
 //Stripe returns an authenticated Stripe client
 func (g *GoConnect) Stripe(client *http.Client) *cli.API {
+	tool.PanicIfNil(g)
 	return cli.New(g.SendGridToken, stripe.NewBackends(client))
 }
 
 //Gcloud returns an authenticated GCP instance
 func (g *GoConnect) Gcloud() *gcloud.GCP {
+	tool.PanicIfNil(g.GCP)
 	return g.GCP
 }
 
@@ -88,6 +94,7 @@ type PluginFunc func(g *GoConnect) driver.PluginFunc
 
 // Serve starts a grpc Engine ref:github.com/autom8ter/engine  server with a default middleware stack on the specified address with the provided pluugin functions.
 func (g *GoConnect) Serve(addr string, fns ...PluginFunc) error {
+	tool.PanicIfNil(g)
 	plugs := []driver.Plugin{}
 	for _, v := range fns {
 		plugs = append(plugs, v(g))

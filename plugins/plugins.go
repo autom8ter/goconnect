@@ -4,24 +4,39 @@ import (
 	"context"
 	"github.com/autom8ter/engine/driver"
 	"github.com/autom8ter/goconnect"
+	"golang.org/x/text/language"
 	"google.golang.org/grpc"
 	pb "google.golang.org/grpc/examples/helloworld/helloworld"
 	"log"
 )
 
 // server is used to implement helloworld.GreeterServer.
-type server struct{}
+type Server struct {
+	g *goconnect.GoConnect
+}
+
+func NewServer(g *goconnect.GoConnect) *Server {
+	return &Server{g: g}
+}
 
 // SayHello implements helloworld.GreeterServer
-func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
+func (s *Server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
 	log.Printf("Received: %v", in.Name)
-	return &pb.HelloReply{Message: "Hello " + in.Name}, nil
+	cli, err := s.g.GCP.Translate(ctx)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := cli.Translate(ctx, []string{"Hello " + in.Name}, language.Spanish, nil)
+
+	return &pb.HelloReply{Message: resp[0].Text}, nil
 }
 
 func EchoService() goconnect.PluginFunc {
 	return func(g *goconnect.GoConnect) driver.PluginFunc {
 		return func(s *grpc.Server) {
-			pb.RegisterGreeterServer(s, &server{})
+			pb.RegisterGreeterServer(s, &Server{
+				g,
+			})
 		}
 	}
 }
