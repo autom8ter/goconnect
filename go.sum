@@ -169,6 +169,8 @@ github.com/autom8ter/objectify v0.0.0-20190407094657-91bdd7133430 h1:Zco7QFG48tf
 github.com/autom8ter/objectify v0.0.0-20190407094657-91bdd7133430/go.mod h1:s73VOKma8PH+o1xgp0R3PwIQTNAorPTH7xSugdrUB4o=
 github.com/autom8ter/objectify v0.0.0-20190407102447-e8d21d988edc h1:4Qsv0AWZPLOuxI9xHSqwoLW/sGht6f1TGR3uharTh8M=
 github.com/autom8ter/objectify v0.0.0-20190407102447-e8d21d988edc/go.mod h1:EAzDHsLulh41WBS3lcJgenwdK21Ep+/KqiiGvWC/lCQ=
+github.com/autom8ter/objectify v0.0.0-20190407122444-5ac369f8adef h1:6NRS1hRccaE8xTBlhSVpWxLToMqaIjmDLDta+ByA0L8=
+github.com/autom8ter/objectify v0.0.0-20190407122444-5ac369f8adef/go.mod h1:EAzDHsLulh41WBS3lcJgenwdK21Ep+/KqiiGvWC/lCQ=
 github.com/autom8ter/plugins v0.0.0-20190328210842-acc38ebe8466/go.mod h1:p9lcaqU+mP6mqsbYJP9TWY5FDzxKxPWQfMvEb09OwzY=
 github.com/autom8ter/util v0.0.0-20190315143019-1ab48ff7769b h1:9/xdefJqW1AlO2awvgxCFPnJjg1m8TO5EzdSk/B0oFU=
 github.com/autom8ter/util v0.0.0-20190315143019-1ab48ff7769b/go.mod h1:2h8US+tG3Wg9A68c4Io0aKdc506t3QyphvcRhvp8p1Q=
