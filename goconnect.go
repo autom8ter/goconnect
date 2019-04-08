@@ -28,7 +28,7 @@ type GoConnect struct {
 	SlackToken      string `validate:"required"`
 }
 
-func NewGoConnect(g *gcloud.GCP, twilioAccount string, twilioToken string, sendGridToken string, stripeAccount string, stripeToken string, slackToken string) *GoConnect {
+func New(g *gcloud.GCP, twilioAccount string, twilioToken string, sendGridToken string, stripeAccount string, stripeToken string, slackToken string) *GoConnect {
 	return &GoConnect{GCP: g, TwilioAccount: twilioAccount, TwilioToken: twilioToken, SendGridToken: sendGridToken, StripeAccount: stripeAccount, StripeToken: stripeToken, SlackToken: slackToken}
 }
 

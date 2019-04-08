@@ -24,10 +24,10 @@ type GoConnect struct {
 GoConnect holds the required configuration variables to create a GoConnect
 Instance. Use Init() to validate a GoConnect instance.
 
-#### func  NewGoConnect
+#### func  New
 
 ```go
-func NewGoConnect(g *gcloud.GCP, twilioAccount string, twilioToken string, sendGridToken string, stripeAccount string, stripeToken string, slackToken string) *GoConnect
+func New(g *gcloud.GCP, twilioAccount string, twilioToken string, sendGridToken string, stripeAccount string, stripeToken string, slackToken string) *GoConnect
 ```
 
 #### func (*GoConnect) Execute
