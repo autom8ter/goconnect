@@ -68,7 +68,7 @@ SendGrid returns an authenticated SendGrid client
 ```go
 func (g *GoConnect) Serve(addr string, fns ...PluginFunc) error
 ```
-Serve starts a grpc Engine ref:github.com/autom8ter/engine with a default
+Serve starts a grpc Engine ref:github.com/autom8ter/engine server with a default
 middleware stack on the specified address with the provided pluugin functions.
 
 #### func (*GoConnect) Stripe
@@ -92,19 +92,12 @@ func (g *GoConnect) Twilio() *gotwilio.Twilio
 ```
 Twilio returns an authenticated Twilio client
 
-#### type HandlerFunc
-
-```go
-type HandlerFunc func(g *GoConnect) error
-```
-
-A HandlerFuncFunc is a GoConnect Callback function handler
-
 #### type PluginFunc
 
 ```go
 type PluginFunc func(g *GoConnect) driver.PluginFunc
 ```
 
-PluginFunc takses a GoConnect instance and returns a function that is used to
-create and register a grpc service
+PluginFunc is a callback function that takes a GoConnect instance and returns a
+function that is used to create and register a grpc service. It is used in the
+GoConnect Serve() method.
