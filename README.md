@@ -63,14 +63,6 @@ func (g *GoConnect) SendGrid() *sendgrid.Client
 ```
 SendGrid returns an authenticated SendGrid client
 
-#### func (*GoConnect) Serve
-
-```go
-func (g *GoConnect) Serve(addr string, fns ...PluginFunc) error
-```
-Serve starts a grpc Engine ref:github.com/autom8ter/engine server with a default
-middleware stack on the specified address with the provided pluugin functions.
-
 #### func (*GoConnect) Stripe
 
 ```go
@@ -91,13 +83,3 @@ ToMap returns the GoConnect config as a map
 func (g *GoConnect) Twilio() *gotwilio.Twilio
 ```
 Twilio returns an authenticated Twilio client
-
-#### type PluginFunc
-
-```go
-type PluginFunc func(g *GoConnect) driver.PluginFunc
-```
-
-PluginFunc is a callback function that takes a GoConnect instance and returns a
-function that is used to create and register a grpc service. It is used in the
-GoConnect Serve() method.
