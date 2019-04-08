@@ -4,13 +4,10 @@ import (
 	"context"
 	"github.com/autom8ter/engine/driver"
 	"github.com/autom8ter/goconnect"
-	"github.com/autom8ter/objectify"
 	"google.golang.org/grpc"
 	pb "google.golang.org/grpc/examples/helloworld/helloworld"
 	"log"
 )
-
-var util = objectify.New()
 
 // server is used to implement helloworld.GreeterServer.
 type server struct{}
