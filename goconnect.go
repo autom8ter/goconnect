@@ -1,175 +1,54 @@
 package goconnect
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/autom8ter/gcloud"
 	"github.com/autom8ter/objectify"
-	"github.com/nlopes/slack"
 	"github.com/pkg/errors"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sfreiberg/gotwilio"
 	"github.com/stripe/stripe-go"
-	"github.com/stripe/stripe-go/client"
-	"google.golang.org/api/option"
-	"io"
-	"log"
+	cli "github.com/stripe/stripe-go/client"
 	"net/http"
 )
 
 var tool = objectify.New()
 
-//Config holds the required configuration variables to create a GoConnect Instance
-type Config struct {
-	ProjectID       string `validate:"required"`
-	JSONPath        string `validate:"required"`
-	TwilioAccount   string `validate:"required"`
-	TwilioToken     string `validate:"required"`
+//	GoConnect holds the required configuration variables to create a GoConnect Instance. Use Init() to validate a GoConnect instance.
+type GoConnect struct {
+	GCP             *gcloud.GCP `validate:"required"`
+	TwilioAccount   string      `validate:"required"`
+	TwilioToken     string      `validate:"required"`
 	SendGridAccount string
 	SendGridToken   string `validate:"required"`
 	StripeAccount   string
 	StripeToken     string `validate:"required"`
 	SlackAccount    string
-	SlackToken      string   `validate:"required"`
-	Scopes          []string `validate:"required"`
-	InCluster       bool
-	MasterKey       string
+	SlackToken      string `validate:"required"`
 }
 
-// GoConnect holds an authenticated Twilio, Stripe, Firebase, and SendGrid Client. It also carries an HTTP client and context.
-type GoConnect struct {
-	ctx   context.Context        `validate:"required"`
-	cfg   *Config                `validate:"required"`
-	twil  *gotwilio.Twilio       `validate:"required"`
-	grid  *sendgrid.Client       `validate:"required"`
-	strip *client.API            `validate:"required"`
-	chat  *slack.Client          `validate:"required"`
-	gcp   *gcloud.GCP            `validate:"required"`
-	data  map[string]interface{} `validate:"required"`
+func NewGoConnect(g *gcloud.GCP, twilioAccount string, twilioToken string, sendGridToken string, stripeAccount string, stripeToken string, slackToken string) *GoConnect {
+	return &GoConnect{GCP: g, TwilioAccount: twilioAccount, TwilioToken: twilioToken, SendGridToken: sendGridToken, StripeAccount: stripeAccount, StripeToken: stripeToken, SlackToken: slackToken}
 }
 
-// New Creates a new GoConnect from the provided http client and config
-func New(ctx context.Context, c *Config) (*GoConnect, error) {
-	if err := tool.Validate(c); err != nil {
-		panic(err.Error())
-	}
-	gcp := gcloud.New(ctx, &gcloud.Config{
-		Project:   c.ProjectID,
-		Scopes:    c.Scopes,
-		InCluster: false,
-		Options:   []option.ClientOption{option.WithCredentialsFile(c.JSONPath)},
-	})
-	if err := gcp.Error(); err != nil {
-		log.Println("gcp initialization error- ignore if not using client in error.", err.Error())
-	}
-
-	chat := slack.New(c.SlackToken)
-	twil := gotwilio.NewTwilioClientCustomHTTP(c.TwilioAccount, c.TwilioToken, gcp.HTTP())
-	strip := client.New(c.StripeToken, stripe.NewBackends(gcp.HTTP()))
-	grid := sendgrid.NewSendClient(c.SendGridToken)
-	data := make(map[string]interface{})
-	g := &GoConnect{
-		ctx:   ctx,
-		cfg:   c,
-		gcp:   gcp,
-		twil:  twil,
-		grid:  grid,
-		chat:  chat,
-		strip: strip,
-		data:  data,
-	}
-	if err := tool.Validate(g); err != nil {
-		panic(err.Error())
-	}
-	return g, nil
+func (g *GoConnect) Init() error {
+	return tool.Validate(g)
 }
 
-// GCP returns a gcloud.GCP instance
-func (g *GoConnect) GCP() *gcloud.GCP {
-	return g.gcp
-}
-
-// Config returns the config used to create the GoConnect instance
-func (g *GoConnect) Config() *Config {
-	return g.cfg
-}
-
-// Stripe returns an authenticated Stripe client
-func (g *GoConnect) Stripe() *client.API {
-	return g.strip
-}
-
-// Twilio returns an authenticated Twilio client
 func (g *GoConnect) Twilio() *gotwilio.Twilio {
-	return g.twil
+	return gotwilio.NewTwilioClient(g.TwilioAccount, g.TwilioToken)
 }
 
-// SendGrid returns an authenticated SendGrid client
 func (g *GoConnect) SendGrid() *sendgrid.Client {
-	return g.grid
+	return sendgrid.NewSendClient(g.SendGridToken)
 }
 
-// Slack returns an authenticated Slack client
-func (g *GoConnect) Slack() *slack.Client {
-	return g.chat
+func (g *GoConnect) Stripe(client *http.Client) *cli.API {
+	return cli.New(g.SendGridToken, stripe.NewBackends(client))
 }
-
-// HTTP returns an HTTP client
-func (g *GoConnect) HTTP() *http.Client {
-	return g.gcp.HTTP()
-}
-
-// Render renders the text with the GoConnects current data. It writes the output to the provided writer
-func (g *GoConnect) RenderTXT(text string, w io.Writer) error {
-	return tool.RenderTXT(text, g.data, w)
-}
-
-// Render renders the text with the GoConnects current data. It writes the output to the provided writer
-func (g *GoConnect) RenderHTML(text string, w io.Writer) error {
-	return tool.RenderHTML(text, g.data, w)
-}
-
-// JSON returns the GoConnects current data as JSON
-func (g *GoConnect) JSON() []byte {
-	return tool.MarshalJSON(g.data)
-}
-
-// YAML returns the GoConnects current data as YAML
-func (g *GoConnect) YAML() []byte {
-	return tool.MarshalYAML(g.data)
-}
-
-// XML returns the GoConnects current data as XML
-func (g *GoConnect) XML() []byte {
-	return tool.MarshalXML(g.data)
-}
-
-// Data returns GoConnects current data as map[string]interface{}
-func (g *GoConnect) Data() map[string]interface{} {
-	return g.data
-}
-
-// AddStructData appends the provided structs data to the GoConnects data
-func (g *GoConnect) AddStructData(obj interface{}) {
-	for k, v := range tool.ToMap(obj) {
-		g.data[k] = v
-	}
-}
-
-// AddData appends the provided data to the GoConnects current data
-func (g *GoConnect) AddData(obj map[string]interface{}) {
-	for k, v := range obj {
-		g.data[k] = v
-	}
-}
-
-// MasterKey returns the master key from config as bytes. Defaults to "secret"
-func (g *GoConnect) MasterKey() []byte {
-	if g.cfg.MasterKey != "" {
-		return []byte(g.cfg.MasterKey)
-	}
-	return []byte("secret")
+func (g *GoConnect) Gcloud() *gcloud.GCP {
+	return g.GCP
 }
 
 // A HandlerFuncFunc is a GoConnect Callback function handler

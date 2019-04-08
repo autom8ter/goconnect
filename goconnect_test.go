@@ -2,12 +2,7 @@ package goconnect_test
 
 import (
 	"context"
-	"fmt"
-	"github.com/autom8ter/goconnect"
 	"github.com/autom8ter/objectify"
-	"io/ioutil"
-	"os"
-	"testing"
 )
 
 var ctx = context.Background()
@@ -24,6 +19,7 @@ var Doc = &TestDoc{
 	},
 }
 
+/*
 func Test(t *testing.T) {
 	var err error
 	g, err := goconnect.New(ctx, &goconnect.Config{
@@ -72,3 +68,5 @@ func Test(t *testing.T) {
 	}
 	fmt.Println("Firestore Document Update Time:", tool.HumanizeTime(resp.UpdateTime), resp.UpdateTime.String())
 }
+
+*/
