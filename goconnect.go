@@ -7,6 +7,8 @@ import (
 	"github.com/sfreiberg/gotwilio"
 	"github.com/stripe/stripe-go"
 	"github.com/stripe/stripe-go/customer"
+	"github.com/stripe/stripe-go/sub"
+
 	"os"
 	"time"
 )
@@ -21,12 +23,13 @@ const (
 
 //	GoConnect holds the required configuration variables to create a GoConnect Instance. Use Init() to validate a GoConnect instance.
 type GoConnect struct {
-	twilio    *gotwilio.Twilio            `validate:"required"`
-	grid      *sendgrid.Client            `validate:"required"`
-	slck      *slack.Client               `validate:"required"`
-	util      *objectify.Handler          `validate:"required"`
-	customers map[string]*stripe.Customer `validate:"required"`
-	cfg       *Config                     `validate:"required"`
+	twilio        *gotwilio.Twilio                `validate:"required"`
+	grid          *sendgrid.Client                `validate:"required"`
+	slck          *slack.Client                   `validate:"required"`
+	util          *objectify.Handler              `validate:"required"`
+	customers     map[string]*stripe.Customer     `validate:"required"`
+	subscriptions map[string]*stripe.Subscription `validate:"required"`
+	cfg           *Config                         `validate:"required"`
 }
 
 type Config struct {
@@ -90,12 +93,13 @@ func NewFromEnv() *GoConnect {
 	}
 	stripe.Key = cfg.StripeKey
 	return &GoConnect{
-		twilio:    gotwilio.NewTwilioClient(cfg.TwilioAccount, cfg.TwilioKey),
-		grid:      sendgrid.NewSendClient(cfg.SendgridKey),
-		slck:      nil,
-		util:      util,
-		customers: make(map[string]*stripe.Customer),
-		cfg:       cfg,
+		twilio:        gotwilio.NewTwilioClient(cfg.TwilioAccount, cfg.TwilioKey),
+		grid:          sendgrid.NewSendClient(cfg.SendgridKey),
+		slck:          nil,
+		util:          util,
+		customers:     make(map[string]*stripe.Customer),
+		subscriptions: make(map[string]*stripe.Subscription),
+		cfg:           cfg,
 	}
 }
 
@@ -106,9 +110,11 @@ func (g *GoConnect) Init() error {
 		return err
 	}
 	if freq != 0 {
-		g.sync(freq)
+		g.syncCustomers(freq)
+		g.syncSubscriptions(freq)
 	} else {
-		g.sync(1 * time.Minute)
+		g.syncCustomers(1 * time.Minute)
+		g.syncSubscriptions(1 * time.Minute)
 	}
 	return g.util.Validate(g)
 }
@@ -155,11 +161,19 @@ func (g *GoConnect) GetCustomer(key string) *stripe.Customer {
 	return g.customers[key]
 }
 
+func (g *GoConnect) GetSubscription(key string) *stripe.Subscription {
+	return g.subscriptions[key]
+}
+
+func (g *GoConnect) Subscriptions() map[string]*stripe.Subscription {
+	return g.subscriptions
+}
+
 func (g *GoConnect) SwitchIndex(typ CustomerIndex) {
 	g.cfg.Index = typ
 }
 
-func (g *GoConnect) sync(frequency time.Duration) {
+func (g *GoConnect) syncCustomers(frequency time.Duration) {
 	stripe.Key = g.cfg.StripeKey
 	for {
 		i := customer.List(nil)
@@ -173,6 +187,18 @@ func (g *GoConnect) sync(frequency time.Duration) {
 			default:
 				g.customers[c.ID] = c
 			}
+		}
+		time.Sleep(frequency)
+	}
+}
+
+func (g *GoConnect) syncSubscriptions(frequency time.Duration) {
+	stripe.Key = g.cfg.StripeKey
+	for {
+		i := sub.List(nil)
+		s := i.Subscription()
+		for i.Next() {
+			g.subscriptions[s.ID] = s
 		}
 		time.Sleep(frequency)
 	}
