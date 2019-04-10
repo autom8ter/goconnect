@@ -18,48 +18,6 @@ type CallbackFunc func(customer2 *stripe.Customer) error
 ```
 
 
-#### type Config
-
-```go
-type Config struct {
-	Debug         bool
-	TwilioAccount string `validate:"required"`
-	TwilioKey     string `validate:"required"`
-	SendgridKey   string `validate:"required"`
-	SlackKey      string `validate:"required"`
-	StripeKey     string `validate:"required"`
-	Index         CustomerIndex
-	EmailConfig   *EmailConfig `validate:"required"`
-	LogConfig     *LogConfig   `validate:"required"`
-}
-```
-
-
-#### type CustomerIndex
-
-```go
-type CustomerIndex int
-```
-
-
-```go
-const (
-	ID CustomerIndex = iota
-	EMAIL
-	PHONE
-)
-```
-
-#### type EmailConfig
-
-```go
-type EmailConfig struct {
-	Address string `validate:"required"`
-	Name    string `validate:"required"`
-}
-```
-
-
 #### type GoConnect
 
 ```go
@@ -73,13 +31,13 @@ Instance. Use Init() to validate a GoConnect instance.
 #### func  New
 
 ```go
-func New(cfg *Config) *GoConnect
+func New(cfg *api.Config) *GoConnect
 ```
 
 #### func  NewFromEnv
 
 ```go
-func NewFromEnv(customerIndex CustomerIndex, debug bool) *GoConnect
+func NewFromEnv(customerIndex api.CustomerIndex, debug bool) *GoConnect
 ```
 TWILIO_ACCOUNT, TWILIO_KEY, SENDGRID_KEY, SLACK_KEY, STRIPE_KEY, EMAIL_ADDRESS,
 EMAIL_NAME, SLACK_LOG_USERNAME, SLACK_LOG_CHANNEL
@@ -87,31 +45,31 @@ EMAIL_NAME, SLACK_LOG_USERNAME, SLACK_LOG_CHANNEL
 #### func (*GoConnect) AddChannelReminder
 
 ```go
-func (g *GoConnect) AddChannelReminder(channelId string, text string, time string) (string, error)
+func (g *GoConnect) AddChannelReminder(r *api.ChannelReminder) (string, error)
 ```
 
 #### func (*GoConnect) AddPin
 
 ```go
-func (g *GoConnect) AddPin(ctx context.Context, text, channel, file, comment string) error
+func (g *GoConnect) AddPin(ctx context.Context, p *api.Pin) error
 ```
 
 #### func (*GoConnect) AddReaction
 
 ```go
-func (g *GoConnect) AddReaction(ctx context.Context, text, channel, file, comment string) error
+func (g *GoConnect) AddReaction(ctx context.Context, r *api.UserReminder) error
 ```
 
 #### func (*GoConnect) AddStar
 
 ```go
-func (g *GoConnect) AddStar(ctx context.Context, text, channel, file, comment string) error
+func (g *GoConnect) AddStar(ctx context.Context, star *api.Star) error
 ```
 
 #### func (*GoConnect) AddUserReminder
 
 ```go
-func (g *GoConnect) AddUserReminder(userId string, text string, time string) (string, error)
+func (g *GoConnect) AddUserReminder(r *api.UserReminder) (string, error)
 ```
 
 #### func (*GoConnect) CallCustomer
@@ -136,7 +94,7 @@ func (g *GoConnect) CancelSubscription(key string, planName string) error
 #### func (*GoConnect) Config
 
 ```go
-func (g *GoConnect) Config() *Config
+func (g *GoConnect) Config() *api.Config
 ```
 
 #### func (*GoConnect) CreateCustomer
@@ -222,7 +180,7 @@ func (g *GoConnect) EmailCustomer(customerKey, subject, plain, html string) erro
 #### func (*GoConnect) EmailUser
 
 ```go
-func (g *GoConnect) EmailUser(ctx context.Context, email, subject, string, plain, html string) error
+func (g *GoConnect) EmailUser(ctx context.Context, email *api.RecipientEmail) error
 ```
 
 #### func (*GoConnect) FaxCustomer
@@ -283,7 +241,7 @@ func (g *GoConnect) GetVideoRoom(id string) (*gotwilio.VideoResponse, error)
 #### func (*GoConnect) HandleSlackEvents
 
 ```go
-func (g *GoConnect) HandleSlackEvents(email string, funcs ...hooks.EventHandler)
+func (g *GoConnect) HandleSlackEvents(funcs ...hooks.EventHandler)
 ```
 
 #### func (*GoConnect) Hook
@@ -302,7 +260,7 @@ Init starts syncing the customer cache and validates the GoConnect instance
 #### func (*GoConnect) LogHook
 
 ```go
-func (g *GoConnect) LogHook(ctx context.Context, author, icon, title string) error
+func (g *GoConnect) LogHook(ctx context.Context, hook *api.LogHook) error
 ```
 
 #### func (*GoConnect) NewTwilioProxyService
@@ -326,27 +284,27 @@ func (g *GoConnect) SMSUser(ctx context.Context, email string, from string, body
 #### func (*GoConnect) SendCall
 
 ```go
-func (g *GoConnect) SendCall(from, to, callback string) (*gotwilio.VoiceResponse, error)
+func (g *GoConnect) SendCall(c *api.Call) (*gotwilio.VoiceResponse, error)
 ```
 Call calls a number
 
 #### func (*GoConnect) SendEmail
 
 ```go
-func (g *GoConnect) SendEmail(name, address, subject, plain, html string) error
+func (g *GoConnect) SendEmail(r *api.RecipientEmail) error
 ```
 
 #### func (*GoConnect) SendFax
 
 ```go
-func (g *GoConnect) SendFax(to, from, mediaUrl, quality, callback string, storeMedia bool) (*gotwilio.FaxResource, error)
+func (g *GoConnect) SendFax(f *api.Fax) (*gotwilio.FaxResource, error)
 ```
 Fax faxes a number
 
 #### func (*GoConnect) SendSMS
 
 ```go
-func (g *GoConnect) SendSMS(from, to, body, mediaUrl, callback, app string) (*gotwilio.SmsResponse, error)
+func (g *GoConnect) SendSMS(s *api.SMS) (*gotwilio.SmsResponse, error)
 ```
 SendSMS sends an sms if mediaurl if empty, mms otherwise.
 
@@ -365,7 +323,7 @@ func (g *GoConnect) SubscribeCustomer(key string, plan, cardnum, month, year, cv
 #### func (*GoConnect) SwitchIndex
 
 ```go
-func (g *GoConnect) SwitchIndex(typ CustomerIndex)
+func (g *GoConnect) SwitchIndex(typ api.CustomerIndex)
 ```
 
 #### func (*GoConnect) SyncCustomers
@@ -434,16 +392,6 @@ func (g *GoConnect) UserPhoneNumber(ctx context.Context, email string) (string, 
 func (g *GoConnect) Util() *objectify.Handler
 ```
 Util returns an objectify util tool ref:github.com/autom8ter/objectify
-
-#### type LogConfig
-
-```go
-type LogConfig struct {
-	UserName string `validate:"required"`
-	Channel  string `validate:"required"`
-}
-```
-
 
 #### type Plugin
 
