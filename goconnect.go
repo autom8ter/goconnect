@@ -38,6 +38,7 @@ type GoConnect struct {
 }
 
 type Config struct {
+	Debug         bool
 	TwilioAccount string `validate:"required"`
 	TwilioKey     string `validate:"required"`
 	SendgridKey   string `validate:"required"`
@@ -75,8 +76,9 @@ func New(cfg *Config) *GoConnect {
 }
 
 //TWILIO_ACCOUNT,  TWILIO_KEY,  SENDGRID_KEY,  SLACK_KEY,  STRIPE_KEY, EMAIL_ADDRESS, EMAIL_NAME, SLACK_LOG_USERNAME, SLACK_LOG_CHANNEL
-func NewFromEnv(customerIndex CustomerIndex) *GoConnect {
+func NewFromEnv(customerIndex CustomerIndex, debug bool) *GoConnect {
 	cfg := &Config{
+		Debug:         debug,
 		TwilioAccount: os.Getenv("TWILIO_ACCOUNT"),
 		TwilioKey:     os.Getenv("TWILIO_KEY"),
 		SendgridKey:   os.Getenv("SENDGRID_KEY"),
@@ -92,6 +94,10 @@ func NewFromEnv(customerIndex CustomerIndex) *GoConnect {
 			Channel:  os.Getenv("SLACK_LOG_CHANNEL"),
 		},
 	}
+	s := slack.New(cfg.SlackKey)
+	if cfg.Debug {
+		s.Debug()
+	}
 	util := objectify.Default()
 	err := util.Validate(cfg)
 	if err != nil {
@@ -101,9 +107,9 @@ func NewFromEnv(customerIndex CustomerIndex) *GoConnect {
 	return &GoConnect{
 		twilio:    gotwilio.NewTwilioClient(cfg.TwilioAccount, cfg.TwilioKey),
 		grid:      sendgrid.NewSendClient(cfg.SendgridKey),
-		slck:      slack.New(cfg.SlackKey),
+		slck:      s,
 		util:      util,
-		hook:      hooks.New(cfg.LogConfig.UserName, cfg.LogConfig.Channel, true),
+		hook:      hooks.New(cfg.LogConfig.UserName, cfg.LogConfig.Channel),
 		customers: make(map[string]*stripe.Customer),
 		cfg:       cfg,
 	}
@@ -370,7 +376,7 @@ func (g *GoConnect) CustomerExists(key string) bool {
 	return g.util.Contains(g.CustomerKeys(), key)
 }
 
-func (g *GoConnect) CallBack(key string, funcs ...CallbackFunc) error {
+func (g *GoConnect) CustomerCallBack(key string, funcs ...CallbackFunc) error {
 	cust, ok := g.GetCustomer(key)
 	if !ok {
 		return errors.New("failed to find customer with key: " + key)
@@ -381,4 +387,22 @@ func (g *GoConnect) CallBack(key string, funcs ...CallbackFunc) error {
 		}
 	}
 	return nil
+}
+
+func (g *GoConnect) HandleSlackEvents(email string, funcs ...hooks.EventHandler) {
+	hooks.EventLoop(g.slck, funcs...)
+}
+
+func (g *GoConnect) GetSlackThreadReplies(ctx context.Context, channel string, thread string) ([]slack.Message, error) {
+	return g.slck.GetChannelRepliesContext(ctx, channel, thread)
+}
+
+func (g *GoConnect) GetSlackChannelHistory(ctx context.Context, channel, latest, oldest string, count int, inclusive bool) (*slack.History, error) {
+	return g.slck.GetChannelHistoryContext(ctx, channel, slack.HistoryParameters{
+		Latest:    latest,
+		Oldest:    oldest,
+		Count:     count,
+		Inclusive: inclusive,
+		Unreads:   true,
+	})
 }

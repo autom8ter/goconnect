@@ -16,6 +16,7 @@ type CallbackFunc func(customer2 *stripe.Customer) error
 
 ```go
 type Config struct {
+	Debug         bool
 	TwilioAccount string `validate:"required"`
 	TwilioKey     string `validate:"required"`
 	SendgridKey   string `validate:"required"`
@@ -72,16 +73,10 @@ func New(cfg *Config) *GoConnect
 #### func  NewFromEnv
 
 ```go
-func NewFromEnv(customerIndex CustomerIndex) *GoConnect
+func NewFromEnv(customerIndex CustomerIndex, debug bool) *GoConnect
 ```
 TWILIO_ACCOUNT, TWILIO_KEY, SENDGRID_KEY, SLACK_KEY, STRIPE_KEY, EMAIL_ADDRESS,
 EMAIL_NAME, SLACK_LOG_USERNAME, SLACK_LOG_CHANNEL
-
-#### func (*GoConnect) CallBack
-
-```go
-func (g *GoConnect) CallBack(key string, funcs ...CallbackFunc) error
-```
 
 #### func (*GoConnect) CancelSubscription
 
@@ -118,6 +113,12 @@ Fax faxes a number
 
 ```go
 func (g *GoConnect) CreateYearlyPlan(amount int64, id, prodId, prodName, nickname string) (*stripe.Plan, error)
+```
+
+#### func (*GoConnect) CustomerCallBack
+
+```go
+func (g *GoConnect) CustomerCallBack(key string, funcs ...CallbackFunc) error
 ```
 
 #### func (*GoConnect) CustomerExists
@@ -163,6 +164,18 @@ func (g *GoConnect) GetFax(id string) (*gotwilio.FaxResource, error)
 func (g *GoConnect) GetSMS(id string) (*gotwilio.SmsResponse, error)
 ```
 
+#### func (*GoConnect) GetSlackChannelHistory
+
+```go
+func (g *GoConnect) GetSlackChannelHistory(ctx context.Context, channel, latest, oldest string, count int, inclusive bool) (*slack.History, error)
+```
+
+#### func (*GoConnect) GetSlackThreadReplies
+
+```go
+func (g *GoConnect) GetSlackThreadReplies(ctx context.Context, channel string, thread string) ([]slack.Message, error)
+```
+
 #### func (*GoConnect) GetSubscriptionFromCustomerEmail
 
 ```go
@@ -185,6 +198,12 @@ func (g *GoConnect) GetSubscriptionFromCustomerPhone(phone string) *stripe.Subsc
 
 ```go
 func (g *GoConnect) GetVideoRoom(id string) (*gotwilio.VideoResponse, error)
+```
+
+#### func (*GoConnect) HandleSlackEvents
+
+```go
+func (g *GoConnect) HandleSlackEvents(email string, funcs ...hooks.EventHandler)
 ```
 
 #### func (*GoConnect) Hook
@@ -233,6 +252,12 @@ func (g *GoConnect) SendSMS(from, to, body, mediaUrl, callback, app string) (*go
 ```
 SendSMS sends an sms if mediaurl if empty, mms otherwise.
 
+#### func (*GoConnect) Serve
+
+```go
+func (g *GoConnect) Serve(addr string, plugs ...Plugin) error
+```
+
 #### func (*GoConnect) SubscribeCustomer
 
 ```go
@@ -264,5 +289,15 @@ Util returns an objectify util tool ref:github.com/autom8ter/objectify
 type LogConfig struct {
 	UserName string `validate:"required"`
 	Channel  string `validate:"required"`
+}
+```
+
+
+#### type Plugin
+
+```go
+type Plugin interface {
+	driver.Plugin
+	RegisterWithClient(g *GoConnect)
 }
 ```
