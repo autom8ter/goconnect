@@ -5,6 +5,12 @@
 
 ## Usage
 
+```go
+var NOEXIST = func(key string) error {
+	return errors.New("customer not found- key: " + key)
+}
+```
+
 #### type CallbackFunc
 
 ```go
@@ -44,6 +50,20 @@ const (
 )
 ```
 
+#### type CustomerInfo
+
+```go
+type CustomerInfo struct {
+	Id          string            `json:"id"`
+	Name        string            `json:"name"`
+	Email       string            `json:"email"`
+	Phone       string            `json:"phone"`
+	Plans       []*Plan           `json:"plan"`
+	Annotations map[string]string `json:"annotations"`
+}
+```
+
+
 #### type EmailConfig
 
 ```go
@@ -78,10 +98,23 @@ func NewFromEnv(customerIndex CustomerIndex, debug bool) *GoConnect
 TWILIO_ACCOUNT, TWILIO_KEY, SENDGRID_KEY, SLACK_KEY, STRIPE_KEY, EMAIL_ADDRESS,
 EMAIL_NAME, SLACK_LOG_USERNAME, SLACK_LOG_CHANNEL
 
+#### func (*GoConnect) CallCustomer
+
+```go
+func (g *GoConnect) CallCustomer(customerKey, from, callback string) (*gotwilio.VoiceResponse, error)
+```
+Call calls a number
+
 #### func (*GoConnect) CancelSubscription
 
 ```go
 func (g *GoConnect) CancelSubscription(key string) error
+```
+
+#### func (*GoConnect) Compile
+
+```go
+func (g *GoConnect) Compile(c *CustomerInfo, hTML string, w io.Writer) error
 ```
 
 #### func (*GoConnect) Config
@@ -121,10 +154,22 @@ func (g *GoConnect) CreateYearlyPlan(amount int64, id, prodId, prodName, nicknam
 func (g *GoConnect) CustomerCallBack(key string, funcs ...CallbackFunc) error
 ```
 
+#### func (*GoConnect) CustomerCard
+
+```go
+func (g *GoConnect) CustomerCard(customerKey string) (*stripe.Card, error)
+```
+
 #### func (*GoConnect) CustomerExists
 
 ```go
 func (g *GoConnect) CustomerExists(key string) bool
+```
+
+#### func (*GoConnect) CustomerIsSubscribedToPlan
+
+```go
+func (g *GoConnect) CustomerIsSubscribedToPlan(customerKey string, planFriendlyName string) bool
 ```
 
 #### func (*GoConnect) CustomerKeys
@@ -133,12 +178,31 @@ func (g *GoConnect) CustomerExists(key string) bool
 func (g *GoConnect) CustomerKeys() []string
 ```
 
+#### func (*GoConnect) CustomerMetadata
+
+```go
+func (g *GoConnect) CustomerMetadata(customerKey string) (map[string]string, error)
+```
+
 #### func (*GoConnect) Customers
 
 ```go
 func (g *GoConnect) Customers() map[string]*stripe.Customer
 ```
 Customers returns your current stripe customer cache
+
+#### func (*GoConnect) EmailCustomer
+
+```go
+func (g *GoConnect) EmailCustomer(customerKey, subject, plain, html string) error
+```
+
+#### func (*GoConnect) FaxCustomer
+
+```go
+func (g *GoConnect) FaxCustomer(customerKey, from, mediaUrl, quality, callback string, storeMedia bool) (*gotwilio.FaxResource, error)
+```
+Fax faxes a number
 
 #### func (*GoConnect) GetCall
 
@@ -225,6 +289,18 @@ Init starts syncing the customer cache and validates the GoConnect instance
 func (g *GoConnect) LogHook(ctx context.Context, author, icon, title string) error
 ```
 
+#### func (*GoConnect) NewTwilioProxyService
+
+```go
+func (g *GoConnect) NewTwilioProxyService(name, callback, ofSessionCallback, interceptCallback, geoMatch, numSelectionBehavior string, defTTL int) (*gotwilio.ProxyService, error)
+```
+
+#### func (*GoConnect) SMSCustomer
+
+```go
+func (g *GoConnect) SMSCustomer(customerKey, from, body, mediaUrl, callback, app string) (*gotwilio.SmsResponse, error)
+```
+
 #### func (*GoConnect) SendCall
 
 ```go
@@ -276,6 +352,18 @@ func (g *GoConnect) SwitchIndex(typ CustomerIndex)
 func (g *GoConnect) SyncCustomers()
 ```
 
+#### func (*GoConnect) ToCustomer
+
+```go
+func (g *GoConnect) ToCustomer(c *CustomerInfo) (*stripe.Customer, error)
+```
+
+#### func (*GoConnect) ToCustomerInfo
+
+```go
+func (g *GoConnect) ToCustomerInfo(customerKey string) (*CustomerInfo, error)
+```
+
 #### func (*GoConnect) Util
 
 ```go
@@ -289,6 +377,18 @@ Util returns an objectify util tool ref:github.com/autom8ter/objectify
 type LogConfig struct {
 	UserName string `validate:"required"`
 	Channel  string `validate:"required"`
+}
+```
+
+
+#### type Plan
+
+```go
+type Plan struct {
+	Name    string `json:"id"`
+	Amount  int64  `json:"amount"`
+	Active  bool   `json:"active"`
+	Service string `json:"service"`
 }
 ```
 

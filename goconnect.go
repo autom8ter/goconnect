@@ -24,6 +24,10 @@ const (
 	PHONE
 )
 
+var NOEXIST = func(key string) error {
+	return errors.New("customer not found- key: " + key)
+}
+
 type CallbackFunc func(customer2 *stripe.Customer) error
 
 //	GoConnect holds the required configuration variables to create a GoConnect Instance. Use Init() to validate a GoConnect instance.
@@ -149,6 +153,24 @@ func (g *GoConnect) SendEmail(name, address, subject, plain, html string) error 
 	return nil
 }
 
+func (g *GoConnect) EmailCustomer(customerKey, subject, plain, html string) error {
+	cust, ok := g.GetCustomer(customerKey)
+	if !ok {
+		return NOEXIST(customerKey)
+	}
+	_, err := g.grid.Send(mail.NewSingleEmail(&mail.Email{
+		Name:    g.cfg.EmailConfig.Name,
+		Address: g.cfg.EmailConfig.Address,
+	}, subject, &mail.Email{
+		Name:    cust.Shipping.Name,
+		Address: cust.Email,
+	}, plain, html))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 //SendSMS sends an sms if mediaurl if empty, mms otherwise.
 func (g *GoConnect) SendSMS(from, to, body, mediaUrl, callback, app string) (*gotwilio.SmsResponse, error) {
 	if mediaUrl != "" {
@@ -160,6 +182,20 @@ func (g *GoConnect) SendSMS(from, to, body, mediaUrl, callback, app string) (*go
 	}
 }
 
+func (g *GoConnect) SMSCustomer(customerKey, from, body, mediaUrl, callback, app string) (*gotwilio.SmsResponse, error) {
+	cust, ok := g.GetCustomer(customerKey)
+	if !ok {
+		return nil, NOEXIST(customerKey)
+	}
+	if mediaUrl != "" {
+		resp, ex, err := g.twilio.SendMMS(from, cust.Shipping.Phone, body, mediaUrl, callback, app)
+		return resp, g.merge(ex, err)
+	} else {
+		resp, ex, err := g.twilio.SendSMS(from, cust.Shipping.Phone, body, callback, app)
+		return resp, g.merge(ex, err)
+	}
+}
+
 func (g *GoConnect) GetSMS(id string) (*gotwilio.SmsResponse, error) {
 	resp, ex, err := g.twilio.GetSMS(id)
 	return resp, g.merge(ex, err)
@@ -167,6 +203,19 @@ func (g *GoConnect) GetSMS(id string) (*gotwilio.SmsResponse, error) {
 
 func (g *GoConnect) GetCall(id string) (*gotwilio.VoiceResponse, error) {
 	resp, ex, err := g.twilio.GetCall(id)
+	return resp, g.merge(ex, err)
+}
+
+func (g *GoConnect) NewTwilioProxyService(name, callback, ofSessionCallback, interceptCallback, geoMatch, numSelectionBehavior string, defTTL int) (*gotwilio.ProxyService, error) {
+	resp, ex, err := g.twilio.NewProxyService(gotwilio.ProxyServiceRequest{
+		UniqueName:              name,
+		CallbackURL:             callback,
+		OutOfSessionCallbackURL: ofSessionCallback,
+		InterceptCallbackURL:    interceptCallback,
+		GeoMatchLevel:           geoMatch,
+		NumberSelectionBehavior: numSelectionBehavior,
+		DefaultTtl:              defTTL,
+	})
 	return resp, g.merge(ex, err)
 }
 
@@ -186,9 +235,29 @@ func (g *GoConnect) SendCall(from, to, callback string) (*gotwilio.VoiceResponse
 	return resp, g.merge(ex, err)
 }
 
+//Call calls a number
+func (g *GoConnect) CallCustomer(customerKey, from, callback string) (*gotwilio.VoiceResponse, error) {
+	cust, ok := g.GetCustomer(customerKey)
+	if !ok {
+		return nil, NOEXIST(customerKey)
+	}
+	resp, ex, err := g.twilio.CallWithUrlCallbacks(from, cust.Shipping.Phone, gotwilio.NewCallbackParameters(callback))
+	return resp, g.merge(ex, err)
+}
+
 //Fax faxes a number
 func (g *GoConnect) SendFax(to, from, mediaUrl, quality, callback string, storeMedia bool) (*gotwilio.FaxResource, error) {
 	resp, ex, err := g.twilio.SendFax(to, from, mediaUrl, quality, callback, storeMedia)
+	return resp, g.merge(ex, err)
+}
+
+//Fax faxes a number
+func (g *GoConnect) FaxCustomer(customerKey, from, mediaUrl, quality, callback string, storeMedia bool) (*gotwilio.FaxResource, error) {
+	cust, ok := g.GetCustomer(customerKey)
+	if !ok {
+		return nil, NOEXIST(customerKey)
+	}
+	resp, ex, err := g.twilio.SendFax(cust.Shipping.Phone, from, mediaUrl, quality, callback, storeMedia)
 	return resp, g.merge(ex, err)
 }
 
@@ -247,6 +316,35 @@ func (g *GoConnect) GetSubscriptionFromCustomerEmail(email string) *stripe.Subsc
 		}
 	}
 	return nil
+}
+
+func (g *GoConnect) CustomerMetadata(customerKey string) (map[string]string, error) {
+	cust, ok := g.GetCustomer(customerKey)
+	if !ok {
+		return nil, NOEXIST(customerKey)
+	}
+	return cust.Metadata, nil
+}
+
+func (g *GoConnect) CustomerCard(customerKey string) (*stripe.Card, error) {
+	cust, ok := g.GetCustomer(customerKey)
+	if !ok {
+		return nil, NOEXIST(customerKey)
+	}
+	return cust.DefaultSource.Card, nil
+}
+
+func (g *GoConnect) CustomerIsSubscribedToPlan(customerKey string, planFriendlyName string) bool {
+	cust, ok := g.GetCustomer(customerKey)
+	if !ok {
+		return false
+	}
+	for _, s := range cust.Subscriptions.Data {
+		if s.Plan.Nickname == planFriendlyName {
+			return true
+		}
+	}
+	return false
 }
 
 func (g *GoConnect) GetSubscriptionFromCustomerPhone(phone string) *stripe.Subscription {
@@ -379,7 +477,7 @@ func (g *GoConnect) CustomerExists(key string) bool {
 func (g *GoConnect) CustomerCallBack(key string, funcs ...CallbackFunc) error {
 	cust, ok := g.GetCustomer(key)
 	if !ok {
-		return errors.New("failed to find customer with key: " + key)
+		return NOEXIST(key)
 	}
 	for i, f := range funcs {
 		if err := f(cust); err != nil {
