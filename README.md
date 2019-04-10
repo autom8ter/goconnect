@@ -5,19 +5,40 @@
 
 ## Usage
 
+#### type Config
+
+```go
+type Config struct {
+	TwilioAccount string        `validate:"required"`
+	TwilioKey     string        `validate:"required"`
+	SendgridKey   string        `validate:"required"`
+	SlackKey      string        `validate:"required"`
+	StripeKey     string        `validate:"required"`
+	Index         CustomerIndex `validate:"required"`
+	SyncFrequency string        `validate:"required"`
+}
+```
+
+
+#### type CustomerIndex
+
+```go
+type CustomerIndex int
+```
+
+
+```go
+const (
+	ID CustomerIndex = iota
+	EMAIL
+	PHONE
+)
+```
+
 #### type GoConnect
 
 ```go
 type GoConnect struct {
-	GCP             *gcloud.GCP `validate:"required"`
-	TwilioAccount   string      `validate:"required"`
-	TwilioToken     string      `validate:"required"`
-	SendGridAccount string
-	SendGridToken   string `validate:"required"`
-	StripeAccount   string
-	StripeToken     string `validate:"required"`
-	SlackAccount    string
-	SlackToken      string `validate:"required"`
 }
 ```
 
@@ -27,59 +48,63 @@ Instance. Use Init() to validate a GoConnect instance.
 #### func  New
 
 ```go
-func New(twilioAccount string, twilioToken string, sendGridToken string, stripeAccount string, stripeToken string, slackToken string, opts ...option.ClientOption) *GoConnect
+func New(cfg *Config) *GoConnect
 ```
-New creates a new GoConnect Instance (no magic)
 
-#### func  NewFromFileEnv
+#### func  NewFromEnv
 
 ```go
-func NewFromFileEnv(file string) *GoConnect
+func NewFromEnv() *GoConnect
 ```
 NewFromFileEnv Initializes a gcp instance from service account credentials ref:
 https://cloud.google.com/iam/docs/creating-managing-service-accounts#iam-service-accounts-create-console
 and looks for Twilio, SendGrid, Stripe, and Slack credentials in environmental
-variables. vars: TWILIO_ACCOUNT, TWILIO_ACCOUNT, SENDGRID_ACCOUNT,
-SENDGRID_TOKEN, STRIPE_ACCOUNT, STRIPE_TOKEN, SLACK_ACCOUNT, SLACK_TOKEN
+variables. vars: TWILIO_ACCOUNT, TWILIO_KEY, SENDGRID_KEY, SYNC_FREQUENCY,
+STRIPE_KEY, STRIPE_TOKEN, SLACK_KEY
 
-#### func (*GoConnect) Gcloud
+#### func (*GoConnect) Call
 
 ```go
-func (g *GoConnect) Gcloud() *gcloud.GCP
+func (g *GoConnect) Call(from, to, callback string) (*gotwilio.VoiceResponse, error)
 ```
-Gcloud returns an authenticated GCP instance
+Call calls a number
+
+#### func (*GoConnect) Customers
+
+```go
+func (g *GoConnect) Customers() map[string]*stripe.Customer
+```
+Customers returns your current stripe customer cache
+
+#### func (*GoConnect) GetCustomer
+
+```go
+func (g *GoConnect) GetCustomer(key string) *stripe.Customer
+```
 
 #### func (*GoConnect) Init
 
 ```go
 func (g *GoConnect) Init() error
 ```
-Init returns an error if any of the required fields are nil
+Init starts syncing the customer cache and validates the GoConnect instance
 
-#### func (*GoConnect) SendGrid
-
-```go
-func (g *GoConnect) SendGrid() *sendgrid.Client
-```
-SendGrid returns an authenticated SendGrid client
-
-#### func (*GoConnect) Stripe
+#### func (*GoConnect) SMS
 
 ```go
-func (g *GoConnect) Stripe(client *http.Client) *cli.API
+func (g *GoConnect) SMS(from, to, body, mediaUrl, callback, app string) (*gotwilio.SmsResponse, error)
 ```
-Stripe returns an authenticated Stripe client
+SendSMS sends an sms if mediaurl if empty, mms otherwise.
 
-#### func (*GoConnect) ToMap
+#### func (*GoConnect) SwitchIndex
 
 ```go
-func (g *GoConnect) ToMap() map[string]interface{}
+func (g *GoConnect) SwitchIndex(typ CustomerIndex)
 ```
-ToMap returns the GoConnect config as a map
 
-#### func (*GoConnect) Twilio
+#### func (*GoConnect) Util
 
 ```go
-func (g *GoConnect) Twilio() *gotwilio.Twilio
+func (g *GoConnect) Util() *objectify.Handler
 ```
-Twilio returns an authenticated Twilio client
+Util returns an objectify util tool ref:github.com/autom8ter/objectify

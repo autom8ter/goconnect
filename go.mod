@@ -4,7 +4,9 @@ require (
 	github.com/autom8ter/objectify v0.0.0-20190410032617-585a176ff76d
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/gorilla/schema v1.1.0 // indirect
+	github.com/gorilla/websocket v1.4.0 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/nlopes/slack v0.5.0
 	github.com/sendgrid/rest v2.4.1+incompatible // indirect
 	github.com/sendgrid/sendgrid-go v3.4.1+incompatible
 	github.com/sfreiberg/gotwilio v0.0.0-20181223013140-ccf5c3cb3e06
