@@ -306,18 +306,6 @@ func (g *GoConnect) SyncCustomers() {
 	}
 }
 
-func (g *GoConnect) GetSubscriptionFromCustomerEmail(email string) *stripe.Subscription {
-	subList := sub.List(nil)
-	s := subList.Subscription()
-	for subList.Next() {
-		s = subList.Subscription()
-		if s.Customer.Email == email {
-			return s
-		}
-	}
-	return nil
-}
-
 func (g *GoConnect) CustomerMetadata(customerKey string) (map[string]string, error) {
 	cust, ok := g.GetCustomer(customerKey)
 	if !ok {
@@ -347,57 +335,43 @@ func (g *GoConnect) CustomerIsSubscribedToPlan(customerKey string, planFriendlyN
 	return false
 }
 
-func (g *GoConnect) GetSubscriptionFromCustomerPhone(phone string) *stripe.Subscription {
-	subList := sub.List(nil)
-	s := subList.Subscription()
-	for subList.Next() {
-		s = subList.Subscription()
-		if s.Customer.Shipping.Phone == phone {
-			return s
-		}
+func (g *GoConnect) CustomerSubscriptions(customerKey string) ([]*stripe.Subscription, error) {
+	cust, ok := g.GetCustomer(customerKey)
+	if !ok {
+		return nil, NOEXIST(customerKey)
 	}
-	return nil
-}
-
-func (g *GoConnect) GetSubscriptionFromCustomerID(id string) *stripe.Subscription {
-	subList := sub.List(nil)
-	s := subList.Subscription()
-	for subList.Next() {
-		s = subList.Subscription()
-		if s.Customer.ID == id {
-			return s
-		}
-	}
-	return nil
+	return cust.Subscriptions.Data, nil
 }
 
 func (g *GoConnect) SubscribeCustomer(key string, plan, cardnum, month, year, cvc string) (*stripe.Subscription, error) {
-	if cust, ok := g.GetCustomer(key); ok {
-		// create a subscription
-		return sub.New(&stripe.SubscriptionParams{
-			Customer: stripe.String(cust.ID),
-			Plan:     stripe.String(plan),
-			Card: &stripe.CardParams{
-				Number:   stripe.String(cardnum),
-				ExpMonth: stripe.String(month),
-				ExpYear:  stripe.String(year),
-				CVC:      stripe.String(cvc),
-			},
-		})
-	} else {
-		return nil, errors.New("customer not found: " + key)
+	cust, ok := g.GetCustomer(key)
+	if !ok {
+		return nil, NOEXIST(key)
 	}
+	return sub.New(&stripe.SubscriptionParams{
+		Customer: stripe.String(cust.ID),
+		Plan:     stripe.String(plan),
+		Card: &stripe.CardParams{
+			Number:   stripe.String(cardnum),
+			ExpMonth: stripe.String(month),
+			ExpYear:  stripe.String(year),
+			CVC:      stripe.String(cvc),
+		},
+	})
 }
 
-func (g *GoConnect) CancelSubscription(key string) error {
-	if cust, ok := g.GetCustomer(key); ok {
-		s := cust.Subscriptions.Data[0]
-		_, err := sub.Cancel(s.ID, nil)
-		if err != nil {
-			return err
+func (g *GoConnect) CancelSubscription(key string, planName string) error {
+	cust, ok := g.GetCustomer(key)
+	if !ok {
+		return NOEXIST(key)
+	}
+	for _, s := range cust.Subscriptions.Data {
+		if s.Plan.Nickname == planName {
+			_, err := sub.Cancel(s.ID, nil)
+			if err != nil {
+				return err
+			}
 		}
-	} else {
-		return errors.New("customer not found: " + key)
 	}
 	return nil
 }
@@ -435,6 +409,18 @@ func (g *GoConnect) CreateYearlyPlan(amount int64, id, prodId, prodName, nicknam
 }
 
 func (g *GoConnect) CreateCustomer(email, description, plan, name, phone string) (*stripe.Customer, error) {
+	if g.cfg.Index == EMAIL {
+		_, ok := g.GetCustomer(email)
+		if !ok {
+			return nil, NOEXIST(email)
+		}
+	}
+	if g.cfg.Index == PHONE {
+		_, ok := g.GetCustomer(phone)
+		if !ok {
+			return nil, NOEXIST(phone)
+		}
+	}
 	c, err := customer.New(&stripe.CustomerParams{
 		Description: stripe.String(description),
 		Email:       stripe.String(email),
@@ -503,4 +489,183 @@ func (g *GoConnect) GetSlackChannelHistory(ctx context.Context, channel, latest,
 		Inclusive: inclusive,
 		Unreads:   true,
 	})
+}
+
+func (g *GoConnect) GetUserByEmail(ctx context.Context, email string) (*slack.User, error) {
+	return g.slck.GetUserByEmailContext(ctx, email)
+}
+
+func (g *GoConnect) UserIsAdmin(ctx context.Context, email string) (bool, error) {
+	usr, err := g.GetUserByEmail(ctx, email)
+	if err != nil {
+		return false, errors.Wrap(err, "goconnect.UserIsAdmin")
+	}
+	if usr.IsAdmin {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func (g *GoConnect) UserIsPrimaryOwner(ctx context.Context, email string) (bool, error) {
+	usr, err := g.GetUserByEmail(ctx, email)
+	if err != nil {
+		return false, errors.Wrap(err, "goconnect.UserIsPrimaryOwner")
+	}
+	if usr.IsPrimaryOwner {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func (g *GoConnect) UserIsOwner(ctx context.Context, email string) (bool, error) {
+	usr, err := g.GetUserByEmail(ctx, email)
+	if err != nil {
+		return false, errors.Wrap(err, "goconnect.UserIsOwner")
+	}
+	if usr.IsOwner {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func (g *GoConnect) UserIsUltraRestricted(ctx context.Context, email string) (bool, error) {
+	usr, err := g.GetUserByEmail(ctx, email)
+	if err != nil {
+		return false, errors.Wrap(err, "goconnect.UserIsUltraRestricted")
+	}
+	if usr.IsUltraRestricted {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (g *GoConnect) UserIsAppUser(ctx context.Context, email string) (bool, error) {
+	usr, err := g.GetUserByEmail(ctx, email)
+	if err != nil {
+		return false, errors.Wrap(err, "goconnect.UserIsAppUser")
+	}
+	if usr.IsAppUser {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (g *GoConnect) UserIsBot(ctx context.Context, email string) (bool, error) {
+	usr, err := g.GetUserByEmail(ctx, email)
+	if err != nil {
+		return false, errors.Wrap(err, "goconnect.UserIsBot")
+	}
+	if usr.IsBot {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (g *GoConnect) UserIsStranger(ctx context.Context, email string) (bool, error) {
+	usr, err := g.GetUserByEmail(ctx, email)
+	if err != nil {
+		return false, errors.Wrap(err, "goconnect.UserIsStranger")
+	}
+	if usr.IsStranger {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (g *GoConnect) UserIsRestricted(ctx context.Context, email string) (bool, error) {
+	usr, err := g.GetUserByEmail(ctx, email)
+	if err != nil {
+		return false, errors.Wrap(err, "goconnect.UserIsRestricted")
+	}
+	if usr.IsRestricted {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (g *GoConnect) UserPhoneNumber(ctx context.Context, email string) (string, error) {
+	usr, err := g.GetUserByEmail(ctx, email)
+	if err != nil {
+		return "", errors.Wrap(err, "goconnect.UserPhoneNumber")
+	}
+	return usr.Profile.Phone, nil
+}
+
+func (g *GoConnect) CallUser(ctx context.Context, email string, from string, callback string) (*gotwilio.VoiceResponse, error) {
+	num, err := g.UserPhoneNumber(ctx, email)
+	if err != nil {
+		return nil, errors.Wrap(err, "goconnect.CallUser")
+	}
+	return g.SendCall(from, num, callback)
+}
+
+func (g *GoConnect) SMSUser(ctx context.Context, email string, from string, body, mediaUrl string, callback, app string) (*gotwilio.SmsResponse, error) {
+	num, err := g.UserPhoneNumber(ctx, email)
+	if err != nil {
+		return nil, errors.Wrap(err, "goconnect.CallUser")
+	}
+	return g.SendSMS(from, num, body, mediaUrl, callback, app)
+}
+
+func (g *GoConnect) EmailUser(ctx context.Context, email, subject, string, plain, html string) error {
+	usr, err := g.slck.GetUserByEmail(email)
+	if err != nil {
+		return errors.Wrap(err, "goconnect.EmailUser- Failed to get user by email")
+	}
+	return g.SendEmail(usr.Name, email, subject, plain, html)
+}
+
+func (g *GoConnect) AddChannelReminder(channelId string, text string, time string) (string, error) {
+	rem, err := g.slck.AddChannelReminder(channelId, text, time)
+	if err != nil {
+		return "", errors.Wrap(err, "goconnect.AddChannelReminder")
+	}
+	return rem.ID, nil
+}
+
+func (g *GoConnect) AddUserReminder(userId string, text string, time string) (string, error) {
+	rem, err := g.slck.AddUserReminder(userId, text, time)
+	if err != nil {
+		return "", errors.Wrap(err, "goconnect.AddUserReminder")
+	}
+	return rem.ID, nil
+}
+
+func (g *GoConnect) AddPin(ctx context.Context, text, channel, file, comment string) error {
+	err := g.slck.AddPinContext(ctx, text, slack.ItemRef{
+		Channel: channel,
+		File:    channel,
+		Comment: comment,
+	})
+	if err != nil {
+		return errors.Wrap(err, "goconnect.AddPin")
+	}
+	return nil
+}
+
+func (g *GoConnect) AddStar(ctx context.Context, text, channel, file, comment string) error {
+	err := g.slck.AddStarContext(ctx, text, slack.ItemRef{
+		Channel: channel,
+		File:    channel,
+		Comment: comment,
+	})
+	if err != nil {
+		return errors.Wrap(err, "goconnect.AddStar")
+	}
+	return nil
+}
+
+func (g *GoConnect) AddReaction(ctx context.Context, text, channel, file, comment string) error {
+	err := g.slck.AddReactionContext(ctx, text, slack.ItemRef{
+		Channel: channel,
+		File:    channel,
+		Comment: comment,
+	})
+	if err != nil {
+		return errors.Wrap(err, "goconnect.AddReaction")
+	}
+	return nil
 }

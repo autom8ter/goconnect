@@ -33,13 +33,12 @@ func (hook *SlackHook) PostAttachments(ctx context.Context, cli *slack.Client, a
 
 func (hook *SlackHook) PostEphemeralAttachments(ctx context.Context, cli *slack.Client, userId string, attachments ...slack.Attachment) error {
 	opts := append(hook.Opts, slack.MsgOptionAttachments(attachments...))
-	 _, err := cli.PostEphemeralContext(ctx, hook.Channel, userId, opts...)
+	_, err := cli.PostEphemeralContext(ctx, hook.Channel, userId, opts...)
 	if err != nil {
 		return err
 	}
 	return nil
 }
-
 
 // GetChannelByName returns a `Channel` with the given name.
 func (c *SlackHook) GetChannelByName(cli *slack.Client, name string) (*slack.Channel, error) {
@@ -63,11 +62,10 @@ func (c *SlackHook) GetUserByEmail(ctx context.Context, cli *slack.Client, email
 
 type UserFunc func(u *slack.User) error
 
-
 func (h *SlackHook) UserFunc(ctx context.Context, cli *slack.Client, email string, funcs ...UserFunc) error {
-	usr, err := h.GetUserByEmail(ctx,cli,  email)
+	usr, err := h.GetUserByEmail(ctx, cli, email)
 	if err != nil {
-		return  err
+		return err
 	}
 	for _, f := range funcs {
 		if err := f(usr); err != nil {
@@ -119,7 +117,6 @@ const (
 	SLACK_COLOR_WARNING string = "warning"
 	SLACK_COLOR_GOOD    string = "good"
 )
-
 
 func EventLoop(cli *slack.Client, opts ...EventHandler) {
 	rtm := cli.NewRTM()

@@ -50,20 +50,6 @@ const (
 )
 ```
 
-#### type CustomerInfo
-
-```go
-type CustomerInfo struct {
-	Id          string            `json:"id"`
-	Name        string            `json:"name"`
-	Email       string            `json:"email"`
-	Phone       string            `json:"phone"`
-	Plans       []*Plan           `json:"plan"`
-	Annotations map[string]string `json:"annotations"`
-}
-```
-
-
 #### type EmailConfig
 
 ```go
@@ -98,6 +84,36 @@ func NewFromEnv(customerIndex CustomerIndex, debug bool) *GoConnect
 TWILIO_ACCOUNT, TWILIO_KEY, SENDGRID_KEY, SLACK_KEY, STRIPE_KEY, EMAIL_ADDRESS,
 EMAIL_NAME, SLACK_LOG_USERNAME, SLACK_LOG_CHANNEL
 
+#### func (*GoConnect) AddChannelReminder
+
+```go
+func (g *GoConnect) AddChannelReminder(channelId string, text string, time string) (string, error)
+```
+
+#### func (*GoConnect) AddPin
+
+```go
+func (g *GoConnect) AddPin(ctx context.Context, text, channel, file, comment string) error
+```
+
+#### func (*GoConnect) AddReaction
+
+```go
+func (g *GoConnect) AddReaction(ctx context.Context, text, channel, file, comment string) error
+```
+
+#### func (*GoConnect) AddStar
+
+```go
+func (g *GoConnect) AddStar(ctx context.Context, text, channel, file, comment string) error
+```
+
+#### func (*GoConnect) AddUserReminder
+
+```go
+func (g *GoConnect) AddUserReminder(userId string, text string, time string) (string, error)
+```
+
 #### func (*GoConnect) CallCustomer
 
 ```go
@@ -105,16 +121,16 @@ func (g *GoConnect) CallCustomer(customerKey, from, callback string) (*gotwilio.
 ```
 Call calls a number
 
+#### func (*GoConnect) CallUser
+
+```go
+func (g *GoConnect) CallUser(ctx context.Context, email string, from string, callback string) (*gotwilio.VoiceResponse, error)
+```
+
 #### func (*GoConnect) CancelSubscription
 
 ```go
-func (g *GoConnect) CancelSubscription(key string) error
-```
-
-#### func (*GoConnect) Compile
-
-```go
-func (g *GoConnect) Compile(c *CustomerInfo, hTML string, w io.Writer) error
+func (g *GoConnect) CancelSubscription(key string, planName string) error
 ```
 
 #### func (*GoConnect) Config
@@ -184,6 +200,12 @@ func (g *GoConnect) CustomerKeys() []string
 func (g *GoConnect) CustomerMetadata(customerKey string) (map[string]string, error)
 ```
 
+#### func (*GoConnect) CustomerSubscriptions
+
+```go
+func (g *GoConnect) CustomerSubscriptions(customerKey string) ([]*stripe.Subscription, error)
+```
+
 #### func (*GoConnect) Customers
 
 ```go
@@ -195,6 +217,12 @@ Customers returns your current stripe customer cache
 
 ```go
 func (g *GoConnect) EmailCustomer(customerKey, subject, plain, html string) error
+```
+
+#### func (*GoConnect) EmailUser
+
+```go
+func (g *GoConnect) EmailUser(ctx context.Context, email, subject, string, plain, html string) error
 ```
 
 #### func (*GoConnect) FaxCustomer
@@ -240,22 +268,10 @@ func (g *GoConnect) GetSlackChannelHistory(ctx context.Context, channel, latest,
 func (g *GoConnect) GetSlackThreadReplies(ctx context.Context, channel string, thread string) ([]slack.Message, error)
 ```
 
-#### func (*GoConnect) GetSubscriptionFromCustomerEmail
+#### func (*GoConnect) GetUserByEmail
 
 ```go
-func (g *GoConnect) GetSubscriptionFromCustomerEmail(email string) *stripe.Subscription
-```
-
-#### func (*GoConnect) GetSubscriptionFromCustomerID
-
-```go
-func (g *GoConnect) GetSubscriptionFromCustomerID(id string) *stripe.Subscription
-```
-
-#### func (*GoConnect) GetSubscriptionFromCustomerPhone
-
-```go
-func (g *GoConnect) GetSubscriptionFromCustomerPhone(phone string) *stripe.Subscription
+func (g *GoConnect) GetUserByEmail(ctx context.Context, email string) (*slack.User, error)
 ```
 
 #### func (*GoConnect) GetVideoRoom
@@ -299,6 +315,12 @@ func (g *GoConnect) NewTwilioProxyService(name, callback, ofSessionCallback, int
 
 ```go
 func (g *GoConnect) SMSCustomer(customerKey, from, body, mediaUrl, callback, app string) (*gotwilio.SmsResponse, error)
+```
+
+#### func (*GoConnect) SMSUser
+
+```go
+func (g *GoConnect) SMSUser(ctx context.Context, email string, from string, body, mediaUrl string, callback, app string) (*gotwilio.SmsResponse, error)
 ```
 
 #### func (*GoConnect) SendCall
@@ -352,16 +374,58 @@ func (g *GoConnect) SwitchIndex(typ CustomerIndex)
 func (g *GoConnect) SyncCustomers()
 ```
 
-#### func (*GoConnect) ToCustomer
+#### func (*GoConnect) UserIsAdmin
 
 ```go
-func (g *GoConnect) ToCustomer(c *CustomerInfo) (*stripe.Customer, error)
+func (g *GoConnect) UserIsAdmin(ctx context.Context, email string) (bool, error)
 ```
 
-#### func (*GoConnect) ToCustomerInfo
+#### func (*GoConnect) UserIsAppUser
 
 ```go
-func (g *GoConnect) ToCustomerInfo(customerKey string) (*CustomerInfo, error)
+func (g *GoConnect) UserIsAppUser(ctx context.Context, email string) (bool, error)
+```
+
+#### func (*GoConnect) UserIsBot
+
+```go
+func (g *GoConnect) UserIsBot(ctx context.Context, email string) (bool, error)
+```
+
+#### func (*GoConnect) UserIsOwner
+
+```go
+func (g *GoConnect) UserIsOwner(ctx context.Context, email string) (bool, error)
+```
+
+#### func (*GoConnect) UserIsPrimaryOwner
+
+```go
+func (g *GoConnect) UserIsPrimaryOwner(ctx context.Context, email string) (bool, error)
+```
+
+#### func (*GoConnect) UserIsRestricted
+
+```go
+func (g *GoConnect) UserIsRestricted(ctx context.Context, email string) (bool, error)
+```
+
+#### func (*GoConnect) UserIsStranger
+
+```go
+func (g *GoConnect) UserIsStranger(ctx context.Context, email string) (bool, error)
+```
+
+#### func (*GoConnect) UserIsUltraRestricted
+
+```go
+func (g *GoConnect) UserIsUltraRestricted(ctx context.Context, email string) (bool, error)
+```
+
+#### func (*GoConnect) UserPhoneNumber
+
+```go
+func (g *GoConnect) UserPhoneNumber(ctx context.Context, email string) (string, error)
 ```
 
 #### func (*GoConnect) Util
@@ -377,18 +441,6 @@ Util returns an objectify util tool ref:github.com/autom8ter/objectify
 type LogConfig struct {
 	UserName string `validate:"required"`
 	Channel  string `validate:"required"`
-}
-```
-
-
-#### type Plan
-
-```go
-type Plan struct {
-	Name    string `json:"id"`
-	Amount  int64  `json:"amount"`
-	Active  bool   `json:"active"`
-	Service string `json:"service"`
 }
 ```
 
