@@ -82,6 +82,12 @@ Customers returns your current stripe customer cache
 func (g *GoConnect) GetCustomer(key string) *stripe.Customer
 ```
 
+#### func (*GoConnect) GetSubscription
+
+```go
+func (g *GoConnect) GetSubscription(key string) *stripe.Subscription
+```
+
 #### func (*GoConnect) Init
 
 ```go
@@ -95,6 +101,12 @@ Init starts syncing the customer cache and validates the GoConnect instance
 func (g *GoConnect) SMS(from, to, body, mediaUrl, callback, app string) (*gotwilio.SmsResponse, error)
 ```
 SendSMS sends an sms if mediaurl if empty, mms otherwise.
+
+#### func (*GoConnect) Subscriptions
+
+```go
+func (g *GoConnect) Subscriptions() map[string]*stripe.Subscription
+```
 
 #### func (*GoConnect) SwitchIndex
 
