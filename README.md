@@ -5,6 +5,13 @@
 
 ## Usage
 
+#### type CallbackFunc
+
+```go
+type CallbackFunc func(customer2 *stripe.Customer) error
+```
+
+
 #### type Config
 
 ```go
@@ -15,7 +22,6 @@ type Config struct {
 	SlackKey      string `validate:"required"`
 	StripeKey     string `validate:"required"`
 	Index         CustomerIndex
-	SyncFrequency string       `validate:"required"`
 	EmailConfig   *EmailConfig `validate:"required"`
 	LogConfig     *LogConfig   `validate:"required"`
 }
@@ -68,11 +74,14 @@ func New(cfg *Config) *GoConnect
 ```go
 func NewFromEnv(customerIndex CustomerIndex) *GoConnect
 ```
-NewFromFileEnv Initializes a gcp instance from service account credentials ref:
-https://cloud.google.com/iam/docs/creating-managing-service-accounts#iam-service-accounts-create-console
-and looks for Twilio, SendGrid, Stripe, and Slack credentials in environmental
-variables. vars: TWILIO_ACCOUNT, TWILIO_KEY, SENDGRID_KEY, SYNC_FREQUENCY,
-STRIPE_KEY, STRIPE_TOKEN, SLACK_KEY
+TWILIO_ACCOUNT, TWILIO_KEY, SENDGRID_KEY, SLACK_KEY, STRIPE_KEY, EMAIL_ADDRESS,
+EMAIL_NAME, SLACK_LOG_USERNAME, SLACK_LOG_CHANNEL
+
+#### func (*GoConnect) CallBack
+
+```go
+func (g *GoConnect) CallBack(key string, funcs ...CallbackFunc) error
+```
 
 #### func (*GoConnect) CancelSubscription
 
@@ -84,6 +93,12 @@ func (g *GoConnect) CancelSubscription(key string) error
 
 ```go
 func (g *GoConnect) Config() *Config
+```
+
+#### func (*GoConnect) CreateCustomer
+
+```go
+func (g *GoConnect) CreateCustomer(email, description, plan, name, phone string) (*stripe.Customer, error)
 ```
 
 #### func (*GoConnect) CreateMonthlyPlan
@@ -103,6 +118,18 @@ Fax faxes a number
 
 ```go
 func (g *GoConnect) CreateYearlyPlan(amount int64, id, prodId, prodName, nickname string) (*stripe.Plan, error)
+```
+
+#### func (*GoConnect) CustomerExists
+
+```go
+func (g *GoConnect) CustomerExists(key string) bool
+```
+
+#### func (*GoConnect) CustomerKeys
+
+```go
+func (g *GoConnect) CustomerKeys() []string
 ```
 
 #### func (*GoConnect) Customers
@@ -136,10 +163,22 @@ func (g *GoConnect) GetFax(id string) (*gotwilio.FaxResource, error)
 func (g *GoConnect) GetSMS(id string) (*gotwilio.SmsResponse, error)
 ```
 
-#### func (*GoConnect) GetSubscription
+#### func (*GoConnect) GetSubscriptionFromCustomerEmail
 
 ```go
-func (g *GoConnect) GetSubscription(key string) (*stripe.Subscription, bool)
+func (g *GoConnect) GetSubscriptionFromCustomerEmail(email string) *stripe.Subscription
+```
+
+#### func (*GoConnect) GetSubscriptionFromCustomerID
+
+```go
+func (g *GoConnect) GetSubscriptionFromCustomerID(id string) *stripe.Subscription
+```
+
+#### func (*GoConnect) GetSubscriptionFromCustomerPhone
+
+```go
+func (g *GoConnect) GetSubscriptionFromCustomerPhone(phone string) *stripe.Subscription
 ```
 
 #### func (*GoConnect) GetVideoRoom
@@ -200,16 +239,16 @@ SendSMS sends an sms if mediaurl if empty, mms otherwise.
 func (g *GoConnect) SubscribeCustomer(key string, plan, cardnum, month, year, cvc string) (*stripe.Subscription, error)
 ```
 
-#### func (*GoConnect) Subscriptions
-
-```go
-func (g *GoConnect) Subscriptions() map[string]*stripe.Subscription
-```
-
 #### func (*GoConnect) SwitchIndex
 
 ```go
 func (g *GoConnect) SwitchIndex(typ CustomerIndex)
+```
+
+#### func (*GoConnect) SyncCustomers
+
+```go
+func (g *GoConnect) SyncCustomers()
 ```
 
 #### func (*GoConnect) Util

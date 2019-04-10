@@ -1,7 +1,7 @@
 module github.com/autom8ter/goconnect
 
 require (
-	github.com/autom8ter/objectify v0.0.0-20190410032617-585a176ff76d
+	github.com/autom8ter/objectify v0.0.0-20190410083251-6d9ec1ec74e4
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/gorilla/schema v1.1.0 // indirect
 	github.com/gorilla/websocket v1.4.0 // indirect

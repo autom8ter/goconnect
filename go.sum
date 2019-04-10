@@ -8,6 +8,12 @@ github.com/Masterminds/sprig v2.18.0+incompatible h1:QoGhlbC6pter1jxKnjMFxT8EqsL
 github.com/Masterminds/sprig v2.18.0+incompatible/go.mod h1:y6hNFY5UBTIWBxnzTeuNhlNS5hqE0NB0E6fgfo2Br3o=
 github.com/autom8ter/objectify v0.0.0-20190410032617-585a176ff76d h1:p9MDRPpMqn+SXEYbbMkJvIoHURi6tPVyScz13Oz6gh4=
 github.com/autom8ter/objectify v0.0.0-20190410032617-585a176ff76d/go.mod h1:pp7rs6TmBjGkr4d2CMCF8vISRBD5k+0e774FIifKtA0=
+github.com/autom8ter/objectify v0.0.0-20190410075734-9be710e396a7 h1:8fkwdTg7E2FwF9vXxOLlMfq3PCXr0sYI1Iuec26v6Io=
+github.com/autom8ter/objectify v0.0.0-20190410075734-9be710e396a7/go.mod h1:pp7rs6TmBjGkr4d2CMCF8vISRBD5k+0e774FIifKtA0=
+github.com/autom8ter/objectify v0.0.0-20190410081015-be0e37dda8bf h1:BxeRK1lQvADBORRUVJpESA7lppuOBTQJSr1BaxsxnK4=
+github.com/autom8ter/objectify v0.0.0-20190410081015-be0e37dda8bf/go.mod h1:pp7rs6TmBjGkr4d2CMCF8vISRBD5k+0e774FIifKtA0=
+github.com/autom8ter/objectify v0.0.0-20190410083251-6d9ec1ec74e4 h1:jDe+KCQ1t0rbyaVjoMSrA7REJwsW/fSa2IeekCaJehw=
+github.com/autom8ter/objectify v0.0.0-20190410083251-6d9ec1ec74e4/go.mod h1:pp7rs6TmBjGkr4d2CMCF8vISRBD5k+0e774FIifKtA0=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
