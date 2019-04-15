@@ -16,6 +16,8 @@ import (
 	"github.com/stripe/stripe-go/sub"
 )
 
+const SLASH_API_URL = "https://us-central1-autom8ter-19.cloudfunctions.net/SlashFunction"
+
 var CUSTOMERNOEXIST = func(key string) error {
 	return errors.New("customer not found- key: " + key)
 }
@@ -60,6 +62,7 @@ func (g *GoConnect) Init(acc *api.Access) error {
 		return err
 	}
 	go g.SyncCustomers()
+	go g.SyncUsers()
 	return api.Util.Validate(g)
 }
 
@@ -470,7 +473,7 @@ func (g *GoConnect) GetSlackChannelHistory(ctx context.Context, channel, latest,
 func (g *GoConnect) UserIsAdmin(ctx context.Context, name string) (bool, error) {
 	usr, err := g.GetUser(name)
 	if err != nil {
-		return false, errors.Wrap(err, "goconnect.UserIsAdmin")
+		return false, errors.Wrap(err, "UserIsAdmin")
 	}
 	if usr.IsAdmin {
 		return true, nil
@@ -482,7 +485,7 @@ func (g *GoConnect) UserIsAdmin(ctx context.Context, name string) (bool, error) 
 func (g *GoConnect) UserIsPrimaryOwner(ctx context.Context, name string) (bool, error) {
 	usr, err := g.GetUser(name)
 	if err != nil {
-		return false, errors.Wrap(err, "goconnect.UserIsPrimaryOwner")
+		return false, errors.Wrap(err, "UserIsPrimaryOwner")
 	}
 	if usr.IsPrimaryOwner {
 		return true, nil
@@ -494,7 +497,7 @@ func (g *GoConnect) UserIsPrimaryOwner(ctx context.Context, name string) (bool, 
 func (g *GoConnect) UserIsOwner(ctx context.Context, name string) (bool, error) {
 	usr, err := g.GetUser(name)
 	if err != nil {
-		return false, errors.Wrap(err, "goconnect.UserIsOwner")
+		return false, errors.Wrap(err, "UserIsOwner")
 	}
 	if usr.IsOwner {
 		return true, nil
@@ -506,7 +509,7 @@ func (g *GoConnect) UserIsOwner(ctx context.Context, name string) (bool, error) 
 func (g *GoConnect) UserIsUltraRestricted(ctx context.Context, name string) (bool, error) {
 	usr, err := g.GetUser(name)
 	if err != nil {
-		return false, errors.Wrap(err, "goconnect.UserIsUltraRestricted")
+		return false, errors.Wrap(err, "UserIsUltraRestricted")
 	}
 	if usr.IsUltraRestricted {
 		return true, nil
@@ -517,7 +520,7 @@ func (g *GoConnect) UserIsUltraRestricted(ctx context.Context, name string) (boo
 func (g *GoConnect) UserIsAppUser(ctx context.Context, name string) (bool, error) {
 	usr, err := g.GetUser(name)
 	if err != nil {
-		return false, errors.Wrap(err, "goconnect.UserIsAppUser")
+		return false, errors.Wrap(err, "UserIsAppUser")
 	}
 	if usr.IsAppUser {
 		return true, nil
@@ -528,7 +531,7 @@ func (g *GoConnect) UserIsAppUser(ctx context.Context, name string) (bool, error
 func (g *GoConnect) UserIsBot(ctx context.Context, name string) (bool, error) {
 	usr, err := g.GetUser(name)
 	if err != nil {
-		return false, errors.Wrap(err, "goconnect.UserIsBot")
+		return false, errors.Wrap(err, "UserIsBot")
 	}
 	if usr.IsBot {
 		return true, nil
@@ -547,7 +550,7 @@ func (g *GoConnect) UserExists(key string) bool {
 func (g *GoConnect) UserIsStranger(ctx context.Context, name string) (bool, error) {
 	usr, err := g.GetUser(name)
 	if err != nil {
-		return false, errors.Wrap(err, "goconnect.UserIsStranger")
+		return false, errors.Wrap(err, "UserIsStranger")
 	}
 	if usr.IsStranger {
 		return true, nil
@@ -558,7 +561,7 @@ func (g *GoConnect) UserIsStranger(ctx context.Context, name string) (bool, erro
 func (g *GoConnect) UserIsRestricted(ctx context.Context, name string) (bool, error) {
 	usr, err := g.GetUser(name)
 	if err != nil {
-		return false, errors.Wrap(err, "goconnect.UserIsRestricted")
+		return false, errors.Wrap(err, "UserIsRestricted")
 	}
 	if usr.IsRestricted {
 		return true, nil
@@ -569,7 +572,7 @@ func (g *GoConnect) UserIsRestricted(ctx context.Context, name string) (bool, er
 func (g *GoConnect) UserPhoneNumber(ctx context.Context, name string) (string, error) {
 	usr, err := g.GetUser(name)
 	if err != nil {
-		return "", errors.Wrap(err, "goconnect.UserPhoneNumber")
+		return "", errors.Wrap(err, "UserPhoneNumber")
 	}
 	return usr.Profile.Phone, nil
 }
@@ -577,7 +580,7 @@ func (g *GoConnect) UserPhoneNumber(ctx context.Context, name string) (string, e
 func (g *GoConnect) CallUser(ctx context.Context, r *api.CallRequest) (*gotwilio.VoiceResponse, error) {
 	usr, err := g.GetUser(r.Id)
 	if err != nil {
-		return nil, errors.Wrap(err, "goconnect.CallUser")
+		return nil, errors.Wrap(err, "CallUser")
 	}
 	return g.SendCall(&api.Call{
 		To:       usr.Profile.Phone,
@@ -589,7 +592,7 @@ func (g *GoConnect) CallUser(ctx context.Context, r *api.CallRequest) (*gotwilio
 func (g *GoConnect) SMSUser(ctx context.Context, r *api.SMSRequest) (*gotwilio.SmsResponse, error) {
 	num, err := g.UserPhoneNumber(ctx, r.Id)
 	if err != nil {
-		return nil, errors.Wrap(err, "goconnect.SMSUser")
+		return nil, errors.Wrap(err, "SMSUser")
 	}
 	return g.SendSMS(&api.SMS{
 		To:   num,
@@ -601,7 +604,7 @@ func (g *GoConnect) SMSUser(ctx context.Context, r *api.SMSRequest) (*gotwilio.S
 func (g *GoConnect) MMSUser(ctx context.Context, r *api.MMSRequest) (*gotwilio.SmsResponse, error) {
 	num, err := g.UserPhoneNumber(ctx, r.Sms.Id)
 	if err != nil {
-		return nil, errors.Wrap(err, "goconnect.MMSUser")
+		return nil, errors.Wrap(err, "MMSUser")
 	}
 	return g.SendSMS(&api.SMS{
 		To:   num,
@@ -641,7 +644,7 @@ func (g *GoConnect) EmailUser(ctx context.Context, r *api.EmailRequest) error {
 func (g *GoConnect) AddChannelReminder(r *api.ChannelReminder) (string, error) {
 	rem, err := g.slck.AddChannelReminder(r.ChannelId, r.Text, r.Time)
 	if err != nil {
-		return "", errors.Wrap(err, "goconnect.AddChannelReminder")
+		return "", errors.Wrap(err, "AddChannelReminder")
 	}
 	return rem.ID, nil
 }
@@ -649,7 +652,7 @@ func (g *GoConnect) AddChannelReminder(r *api.ChannelReminder) (string, error) {
 func (g *GoConnect) AddUserReminder(r *api.UserReminder) (*slack.Reminder, error) {
 	rem, err := g.slck.AddUserReminder(r.Id, r.Text, r.Time)
 	if err != nil {
-		return nil, errors.Wrap(err, "goconnect.AddUserReminder")
+		return nil, errors.Wrap(err, "AddUserReminder")
 	}
 	return rem, nil
 }
@@ -661,7 +664,7 @@ func (g *GoConnect) AddPin(ctx context.Context, p *api.Pin) error {
 		Comment: p.Item.Comment,
 	})
 	if err != nil {
-		return errors.Wrap(err, "goconnect.AddPin")
+		return errors.Wrap(err, "AddPin")
 	}
 	return nil
 }
@@ -673,7 +676,7 @@ func (g *GoConnect) AddStar(ctx context.Context, star *api.Star) error {
 		Comment: star.Item.Comment,
 	})
 	if err != nil {
-		return errors.Wrap(err, "goconnect.AddStar")
+		return errors.Wrap(err, "AddStar")
 	}
 	return nil
 }
@@ -685,7 +688,7 @@ func (g *GoConnect) AddReaction(ctx context.Context, r *api.UserReminder) error 
 		Comment: r.Item.Comment,
 	})
 	if err != nil {
-		return errors.Wrap(err, "goconnect.AddReaction")
+		return errors.Wrap(err, "AddReaction")
 	}
 	return nil
 }
