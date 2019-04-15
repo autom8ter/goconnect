@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/autom8ter/api/go/api"
 	"github.com/autom8ter/goconnect/hooks"
+	"github.com/autom8ter/slashsub"
 	"github.com/nlopes/slack"
 	"github.com/pkg/errors"
 	"github.com/sendgrid/sendgrid-go"
@@ -15,7 +16,11 @@ import (
 	"github.com/stripe/stripe-go/sub"
 )
 
-var NOEXIST = func(key string) error {
+var CUSTOMERNOEXIST = func(key string) error {
+	return errors.New("customer not found- key: " + key)
+}
+
+var USERNOEXIST = func(key string) error {
 	return errors.New("customer not found- key: " + key)
 }
 
@@ -30,23 +35,30 @@ type GoConnect struct {
 	slck         *slack.Client               `validate:"required"`
 	hook         *hooks.SlackHook            `validate:"required"`
 	customers    map[string]*stripe.Customer `validate:"required"`
+	users        map[string]*slack.User      `validate:"required"`
 	cfg          *api.Access                 `validate:"required"`
+	slash        *slashsub.SlashSub          `validate:"required"`
 }
 
-func (g *GoConnect) Init(cfg *api.Access) error {
-	if cfg == nil {
-		cfg = api.AccessFromEnv()
+func (g *GoConnect) Init(acc *api.Access) error {
+	if acc == nil {
+		acc = api.AccessFromEnv()
 	}
-	err := api.Util.Validate(cfg)
+	err := api.Util.Validate(acc)
 	if err != nil {
 		api.Util.Fatalln(err.Error())
 	}
-	stripe.Key = cfg.StripeKey
-	g.twilio = gotwilio.NewTwilioClient(cfg.TwilioAccount, cfg.TwilioKey)
-	g.slck = slack.New(cfg.SlackKey)
+
+	stripe.Key = acc.StripeKey
+	g.twilio = gotwilio.NewTwilioClient(acc.TwilioAccount, acc.TwilioKey)
+	g.slck = slack.New(acc.SlackKey)
 	g.customers = make(map[string]*stripe.Customer)
-	g.cfg = cfg
-	g.grid = sendgrid.NewSendClient(cfg.SendgridKey)
+	g.cfg = acc
+	g.grid = sendgrid.NewSendClient(acc.SendgridKey)
+	g.slash, err = slashsub.New()
+	if err != nil {
+		return err
+	}
 	go g.SyncCustomers()
 	return api.Util.Validate(g)
 }
@@ -60,8 +72,12 @@ func (g *GoConnect) Customers() map[string]*stripe.Customer {
 	return g.customers
 }
 
+func (g *GoConnect) Slash() *slashsub.SlashSub {
+	return g.slash
+}
+
 func (g *GoConnect) SendEmail(r *api.RecipientEmail) error {
-	_, err := g.grid.Send(mail.NewSingleEmail(&mail.Email{
+	resp, err := g.grid.Send(mail.NewSingleEmail(&mail.Email{
 		Name:    g.EmailAddress.Name,
 		Address: g.EmailAddress.Address,
 	}, r.Subject, &mail.Email{
@@ -69,7 +85,7 @@ func (g *GoConnect) SendEmail(r *api.RecipientEmail) error {
 		Address: r.To.Address,
 	}, r.PlainText, r.Html))
 	if err != nil {
-		return err
+		return errors.Wrap(err, string(api.Util.MarshalJSON(resp)))
 	}
 	return nil
 }
@@ -77,7 +93,7 @@ func (g *GoConnect) SendEmail(r *api.RecipientEmail) error {
 func (g *GoConnect) EmailCustomer(customerKey, subject, plain, html string) error {
 	cust, ok := g.GetCustomer(customerKey)
 	if !ok {
-		return NOEXIST(customerKey)
+		return CUSTOMERNOEXIST(customerKey)
 	}
 
 	return g.SendEmail(&api.RecipientEmail{
@@ -105,7 +121,7 @@ func (g *GoConnect) SendSMS(s *api.SMS) (*gotwilio.SmsResponse, error) {
 func (g *GoConnect) SMSCustomer(customerKey, from, body, mediaUrl, callback, app string) (*gotwilio.SmsResponse, error) {
 	cust, ok := g.GetCustomer(customerKey)
 	if !ok {
-		return nil, NOEXIST(customerKey)
+		return nil, CUSTOMERNOEXIST(customerKey)
 	}
 	return g.SendSMS(&api.SMS{
 		To:       cust.Shipping.Phone,
@@ -127,11 +143,11 @@ func (g *GoConnect) GetCall(id string) (*gotwilio.VoiceResponse, error) {
 	return resp, g.merge(ex, err)
 }
 
-func (g *GoConnect) NewTwilioProxyService(name, callback, ofSessionCallback, interceptCallback, geoMatch, numSelectionBehavior string, defTTL int) (*gotwilio.ProxyService, error) {
+func (g *GoConnect) NewTwilioProxyService(name, callback, outoffSessionCallback, interceptCallback, geoMatch, numSelectionBehavior string, defTTL int) (*gotwilio.ProxyService, error) {
 	resp, ex, err := g.twilio.NewProxyService(gotwilio.ProxyServiceRequest{
 		UniqueName:              name,
 		CallbackURL:             callback,
-		OutOfSessionCallbackURL: ofSessionCallback,
+		OutOfSessionCallbackURL: outoffSessionCallback,
 		InterceptCallbackURL:    interceptCallback,
 		GeoMatchLevel:           geoMatch,
 		NumberSelectionBehavior: numSelectionBehavior,
@@ -160,7 +176,7 @@ func (g *GoConnect) SendCall(c *api.Call) (*gotwilio.VoiceResponse, error) {
 func (g *GoConnect) CallCustomer(customerKey, from, callback string) (*gotwilio.VoiceResponse, error) {
 	cust, ok := g.GetCustomer(customerKey)
 	if !ok {
-		return nil, NOEXIST(customerKey)
+		return nil, CUSTOMERNOEXIST(customerKey)
 	}
 	return g.SendCall(&api.Call{
 		To:       cust.Shipping.Phone,
@@ -179,7 +195,7 @@ func (g *GoConnect) SendFax(f *api.Fax) (*gotwilio.FaxResource, error) {
 func (g *GoConnect) FaxCustomer(customerKey, from, mediaUrl, quality, callback string, storeMedia bool) (*gotwilio.FaxResource, error) {
 	cust, ok := g.GetCustomer(customerKey)
 	if !ok {
-		return nil, NOEXIST(customerKey)
+		return nil, CUSTOMERNOEXIST(customerKey)
 	}
 
 	return g.SendFax(&api.Fax{
@@ -210,10 +226,69 @@ func (g *GoConnect) LogHook(ctx context.Context, hook *api.LogHook) error {
 	return g.hook.PostLogEntry(ctx, g.slck, hook.Author, hook.Icon, hook.Title, api.Util.Entry())
 }
 
-func (g *GoConnect) Hook(ctx context.Context, attachments ...slack.Attachment) error {
-	return g.hook.PostAttachments(ctx, g.slck, attachments...)
+func (g *GoConnect) Hook(ctx context.Context, attachments ...api.Attachment) error {
+	attachs := []slack.Attachment{}
+	for _, a := range attachments {
+		fields := []slack.AttachmentField{}
+		for _, f := range a.Fields {
+			fields = append(fields, slack.AttachmentField{
+				Title: f.Title,
+				Value: f.Value,
+				Short: f.Short,
+			})
+		}
+
+		attachs = append(attachs, slack.Attachment{
+			Color:      a.Color,
+			Fallback:   a.Fallback,
+			CallbackID: a.CallbackId,
+			ID:         int(a.Id),
+			AuthorID:   a.AuthorId,
+			AuthorName: a.AuthorName,
+			AuthorLink: a.AuthorLink,
+			AuthorIcon: a.AuthorIcon,
+			Title:      a.Title,
+			Pretext:    a.Pretext,
+			Text:       a.Text,
+			ImageURL:   a.ImageUrl,
+			ThumbURL:   a.ThumbUrl,
+			Fields:     fields,
+		})
+	}
+	return g.hook.PostAttachments(ctx, g.slck, attachs...)
 }
 
+func (g *GoConnect) ActionHook(ctx context.Context, attachments ...api.Attachment) error {
+	attachs := []slack.Attachment{}
+	for _, a := range attachments {
+		fields := []slack.AttachmentField{}
+		for _, f := range a.Fields {
+			fields = append(fields, slack.AttachmentField{
+				Title: f.Title,
+				Value: f.Value,
+				Short: f.Short,
+			})
+		}
+
+		attachs = append(attachs, slack.Attachment{
+			Color:      a.Color,
+			Fallback:   a.Fallback,
+			CallbackID: a.CallbackId,
+			ID:         int(a.Id),
+			AuthorID:   a.AuthorId,
+			AuthorName: a.AuthorName,
+			AuthorLink: a.AuthorLink,
+			AuthorIcon: a.AuthorIcon,
+			Title:      a.Title,
+			Pretext:    a.Pretext,
+			Text:       a.Text,
+			ImageURL:   a.ImageUrl,
+			ThumbURL:   a.ThumbUrl,
+			Fields:     fields,
+		})
+	}
+	return g.hook.PostAttachments(ctx, g.slck, attachs...)
+}
 func (g *GoConnect) SyncCustomers() {
 	stripe.Key = g.cfg.StripeKey
 	custList := customer.List(nil)
@@ -225,10 +300,20 @@ func (g *GoConnect) SyncCustomers() {
 	}
 }
 
+func (g *GoConnect) SyncUsers() {
+	users, err := g.slck.GetUsers()
+	if err != nil {
+		api.Util.Fatalln(err.Error())
+	}
+	for _, usr := range users {
+		g.users[usr.Profile.DisplayNameNormalized] = &usr
+	}
+}
+
 func (g *GoConnect) CustomerMetadata(customerKey string) (map[string]string, error) {
 	cust, ok := g.GetCustomer(customerKey)
 	if !ok {
-		return nil, NOEXIST(customerKey)
+		return nil, CUSTOMERNOEXIST(customerKey)
 	}
 	return cust.Metadata, nil
 }
@@ -236,7 +321,7 @@ func (g *GoConnect) CustomerMetadata(customerKey string) (map[string]string, err
 func (g *GoConnect) CustomerCard(customerKey string) (*stripe.Card, error) {
 	cust, ok := g.GetCustomer(customerKey)
 	if !ok {
-		return nil, NOEXIST(customerKey)
+		return nil, CUSTOMERNOEXIST(customerKey)
 	}
 	return cust.DefaultSource.Card, nil
 }
@@ -257,7 +342,7 @@ func (g *GoConnect) CustomerIsSubscribedToPlan(customerKey string, planFriendlyN
 func (g *GoConnect) CustomerSubscriptions(customerKey string) ([]*stripe.Subscription, error) {
 	cust, ok := g.GetCustomer(customerKey)
 	if !ok {
-		return nil, NOEXIST(customerKey)
+		return nil, CUSTOMERNOEXIST(customerKey)
 	}
 	return cust.Subscriptions.Data, nil
 }
@@ -265,7 +350,7 @@ func (g *GoConnect) CustomerSubscriptions(customerKey string) ([]*stripe.Subscri
 func (g *GoConnect) SubscribeCustomer(key string, plan, cardnum, month, year, cvc string) (*stripe.Subscription, error) {
 	cust, ok := g.GetCustomer(key)
 	if !ok {
-		return nil, NOEXIST(key)
+		return nil, CUSTOMERNOEXIST(key)
 	}
 	return sub.New(&stripe.SubscriptionParams{
 		Customer: stripe.String(cust.ID),
@@ -282,7 +367,7 @@ func (g *GoConnect) SubscribeCustomer(key string, plan, cardnum, month, year, cv
 func (g *GoConnect) CancelSubscription(key string, planName string) error {
 	cust, ok := g.GetCustomer(key)
 	if !ok {
-		return NOEXIST(key)
+		return CUSTOMERNOEXIST(key)
 	}
 	for _, s := range cust.Subscriptions.Data {
 		if s.Plan.Nickname == planName {
@@ -330,7 +415,7 @@ func (g *GoConnect) CreateYearlyPlan(amount int64, id, prodId, prodName, nicknam
 func (g *GoConnect) CreateCustomer(email, description, plan, name, phone string) (*stripe.Customer, error) {
 	_, ok := g.GetCustomer(email)
 	if !ok {
-		return nil, NOEXIST(email)
+		return nil, CUSTOMERNOEXIST(email)
 	}
 	c, err := customer.New(&stripe.CustomerParams{
 		Description: stripe.String(description),
@@ -382,12 +467,8 @@ func (g *GoConnect) GetSlackChannelHistory(ctx context.Context, channel, latest,
 	})
 }
 
-func (g *GoConnect) GetUserByEmail(ctx context.Context, email string) (*slack.User, error) {
-	return g.slck.GetUserByEmailContext(ctx, email)
-}
-
-func (g *GoConnect) UserIsAdmin(ctx context.Context, email string) (bool, error) {
-	usr, err := g.GetUserByEmail(ctx, email)
+func (g *GoConnect) UserIsAdmin(ctx context.Context, name string) (bool, error) {
+	usr, err := g.GetUser(name)
 	if err != nil {
 		return false, errors.Wrap(err, "goconnect.UserIsAdmin")
 	}
@@ -398,8 +479,8 @@ func (g *GoConnect) UserIsAdmin(ctx context.Context, email string) (bool, error)
 	return false, nil
 }
 
-func (g *GoConnect) UserIsPrimaryOwner(ctx context.Context, email string) (bool, error) {
-	usr, err := g.GetUserByEmail(ctx, email)
+func (g *GoConnect) UserIsPrimaryOwner(ctx context.Context, name string) (bool, error) {
+	usr, err := g.GetUser(name)
 	if err != nil {
 		return false, errors.Wrap(err, "goconnect.UserIsPrimaryOwner")
 	}
@@ -410,8 +491,8 @@ func (g *GoConnect) UserIsPrimaryOwner(ctx context.Context, email string) (bool,
 	return false, nil
 }
 
-func (g *GoConnect) UserIsOwner(ctx context.Context, email string) (bool, error) {
-	usr, err := g.GetUserByEmail(ctx, email)
+func (g *GoConnect) UserIsOwner(ctx context.Context, name string) (bool, error) {
+	usr, err := g.GetUser(name)
 	if err != nil {
 		return false, errors.Wrap(err, "goconnect.UserIsOwner")
 	}
@@ -422,8 +503,8 @@ func (g *GoConnect) UserIsOwner(ctx context.Context, email string) (bool, error)
 	return false, nil
 }
 
-func (g *GoConnect) UserIsUltraRestricted(ctx context.Context, email string) (bool, error) {
-	usr, err := g.GetUserByEmail(ctx, email)
+func (g *GoConnect) UserIsUltraRestricted(ctx context.Context, name string) (bool, error) {
+	usr, err := g.GetUser(name)
 	if err != nil {
 		return false, errors.Wrap(err, "goconnect.UserIsUltraRestricted")
 	}
@@ -433,8 +514,8 @@ func (g *GoConnect) UserIsUltraRestricted(ctx context.Context, email string) (bo
 	return false, nil
 }
 
-func (g *GoConnect) UserIsAppUser(ctx context.Context, email string) (bool, error) {
-	usr, err := g.GetUserByEmail(ctx, email)
+func (g *GoConnect) UserIsAppUser(ctx context.Context, name string) (bool, error) {
+	usr, err := g.GetUser(name)
 	if err != nil {
 		return false, errors.Wrap(err, "goconnect.UserIsAppUser")
 	}
@@ -444,8 +525,8 @@ func (g *GoConnect) UserIsAppUser(ctx context.Context, email string) (bool, erro
 	return false, nil
 }
 
-func (g *GoConnect) UserIsBot(ctx context.Context, email string) (bool, error) {
-	usr, err := g.GetUserByEmail(ctx, email)
+func (g *GoConnect) UserIsBot(ctx context.Context, name string) (bool, error) {
+	usr, err := g.GetUser(name)
 	if err != nil {
 		return false, errors.Wrap(err, "goconnect.UserIsBot")
 	}
@@ -455,8 +536,16 @@ func (g *GoConnect) UserIsBot(ctx context.Context, email string) (bool, error) {
 	return false, nil
 }
 
-func (g *GoConnect) UserIsStranger(ctx context.Context, email string) (bool, error) {
-	usr, err := g.GetUserByEmail(ctx, email)
+func (g *GoConnect) UserKeys() []string {
+	return api.Util.Sort(g.userKeys(g.users))
+}
+
+func (g *GoConnect) UserExists(key string) bool {
+	return api.Util.Contains(g.UserKeys(), key)
+}
+
+func (g *GoConnect) UserIsStranger(ctx context.Context, name string) (bool, error) {
+	usr, err := g.GetUser(name)
 	if err != nil {
 		return false, errors.Wrap(err, "goconnect.UserIsStranger")
 	}
@@ -466,8 +555,8 @@ func (g *GoConnect) UserIsStranger(ctx context.Context, email string) (bool, err
 	return false, nil
 }
 
-func (g *GoConnect) UserIsRestricted(ctx context.Context, email string) (bool, error) {
-	usr, err := g.GetUserByEmail(ctx, email)
+func (g *GoConnect) UserIsRestricted(ctx context.Context, name string) (bool, error) {
+	usr, err := g.GetUser(name)
 	if err != nil {
 		return false, errors.Wrap(err, "goconnect.UserIsRestricted")
 	}
@@ -477,47 +566,76 @@ func (g *GoConnect) UserIsRestricted(ctx context.Context, email string) (bool, e
 	return false, nil
 }
 
-func (g *GoConnect) UserPhoneNumber(ctx context.Context, email string) (string, error) {
-	usr, err := g.GetUserByEmail(ctx, email)
+func (g *GoConnect) UserPhoneNumber(ctx context.Context, name string) (string, error) {
+	usr, err := g.GetUser(name)
 	if err != nil {
 		return "", errors.Wrap(err, "goconnect.UserPhoneNumber")
 	}
 	return usr.Profile.Phone, nil
 }
 
-func (g *GoConnect) CallUser(ctx context.Context, email string, from string, callback string) (*gotwilio.VoiceResponse, error) {
-	num, err := g.UserPhoneNumber(ctx, email)
+func (g *GoConnect) CallUser(ctx context.Context, r *api.CallRequest) (*gotwilio.VoiceResponse, error) {
+	usr, err := g.GetUser(r.Id)
 	if err != nil {
 		return nil, errors.Wrap(err, "goconnect.CallUser")
 	}
 	return g.SendCall(&api.Call{
-		To:       num,
-		From:     from,
-		Callback: callback,
+		To:       usr.Profile.Phone,
+		From:     g.PhoneNumber,
+		Callback: r.CallbackUrl,
 	})
 }
 
-func (g *GoConnect) SMSUser(ctx context.Context, email string, from string, body, mediaUrl string, callback, app string) (*gotwilio.SmsResponse, error) {
-	num, err := g.UserPhoneNumber(ctx, email)
+func (g *GoConnect) SMSUser(ctx context.Context, r *api.SMSRequest) (*gotwilio.SmsResponse, error) {
+	num, err := g.UserPhoneNumber(ctx, r.Id)
 	if err != nil {
-		return nil, errors.Wrap(err, "goconnect.CallUser")
+		return nil, errors.Wrap(err, "goconnect.SMSUser")
 	}
 	return g.SendSMS(&api.SMS{
-		To:       num,
-		From:     from,
-		Body:     body,
-		MediaUrl: mediaUrl,
-		Callback: callback,
-		App:      app,
+		To:   num,
+		From: g.PhoneNumber,
+		Body: r.Body,
 	})
 }
 
-func (g *GoConnect) EmailUser(ctx context.Context, email *api.RecipientEmail) error {
-	_, err := g.slck.GetUserByEmail(email.To.Address)
+func (g *GoConnect) MMSUser(ctx context.Context, r *api.MMSRequest) (*gotwilio.SmsResponse, error) {
+	num, err := g.UserPhoneNumber(ctx, r.Sms.Id)
 	if err != nil {
-		return errors.Wrap(err, "goconnect.EmailUser- Failed to get user by email")
+		return nil, errors.Wrap(err, "goconnect.MMSUser")
 	}
-	return g.SendEmail(email)
+	return g.SendSMS(&api.SMS{
+		To:   num,
+		From: g.PhoneNumber,
+		Body: r.Sms.Body,
+	})
+}
+
+func (g *GoConnect) GetUser(name string) (*slack.User, error) {
+	user := g.users[name]
+	if user == nil {
+		g.SyncUsers()
+	}
+	if user == nil {
+		return nil, USERNOEXIST(name)
+	}
+	return user, nil
+}
+
+func (g *GoConnect) EmailUser(ctx context.Context, r *api.EmailRequest) error {
+	usr, err := g.GetUser(r.Id)
+	if err != nil {
+		return err
+	}
+	err = g.SendEmail(&api.RecipientEmail{
+		To: &api.EmailAddress{
+			Name:    usr.Name,
+			Address: usr.Profile.Email,
+		},
+		Subject:   r.Subject,
+		PlainText: r.PlainText,
+		Html:      r.HtmlAlt,
+	})
+	return err
 }
 
 func (g *GoConnect) AddChannelReminder(r *api.ChannelReminder) (string, error) {
@@ -528,12 +646,12 @@ func (g *GoConnect) AddChannelReminder(r *api.ChannelReminder) (string, error) {
 	return rem.ID, nil
 }
 
-func (g *GoConnect) AddUserReminder(r *api.UserReminder) (string, error) {
+func (g *GoConnect) AddUserReminder(r *api.UserReminder) (*slack.Reminder, error) {
 	rem, err := g.slck.AddUserReminder(r.Id, r.Text, r.Time)
 	if err != nil {
-		return "", errors.Wrap(err, "goconnect.AddUserReminder")
+		return nil, errors.Wrap(err, "goconnect.AddUserReminder")
 	}
-	return rem.ID, nil
+	return rem, nil
 }
 
 func (g *GoConnect) AddPin(ctx context.Context, p *api.Pin) error {

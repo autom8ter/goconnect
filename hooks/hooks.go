@@ -55,26 +55,6 @@ func (c *SlackHook) GetChannelByName(cli *slack.Client, name string) (*slack.Cha
 	return nil, nil
 }
 
-// GetChannelByName returns a `Channel` with the given name.
-func (c *SlackHook) GetUserByEmail(ctx context.Context, cli *slack.Client, email string) (*slack.User, error) {
-	return cli.GetUserByEmailContext(ctx, email)
-}
-
-type UserFunc func(u *slack.User) error
-
-func (h *SlackHook) UserFunc(ctx context.Context, cli *slack.Client, email string, funcs ...UserFunc) error {
-	usr, err := h.GetUserByEmail(ctx, cli, email)
-	if err != nil {
-		return err
-	}
-	for _, f := range funcs {
-		if err := f(usr); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func (hook *SlackHook) PostLogEntry(ctx context.Context, cli *slack.Client, author, icon, title string, sourceEntry *logrus.Entry) error {
 	var messageFields []slack.AttachmentField
 	for key, value := range sourceEntry.Data {
