@@ -1,6 +1,7 @@
 package goconnect
 
 import (
+	"github.com/autom8ter/api/go/api"
 	"github.com/sfreiberg/gotwilio"
 	"github.com/stripe/stripe-go"
 )
@@ -15,7 +16,7 @@ func (g *GoConnect) customerKeys(m map[string]*stripe.Customer) []string {
 
 func (g *GoConnect) merge(ex *gotwilio.Exception, err error) error {
 	if err != nil && ex != nil {
-		return g.Util().WrapErr(err, string(g.Util().MarshalJSON(ex)))
+		return api.Util.WrapErr(err, string(api.Util.MarshalJSON(ex)))
 	}
 	if err != nil {
 		return err

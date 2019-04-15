@@ -2,10 +2,8 @@ package goconnect
 
 import (
 	"context"
-	"github.com/autom8ter/api/api_util"
 	"github.com/autom8ter/api/go/api"
 	"github.com/autom8ter/goconnect/hooks"
-	"github.com/autom8ter/objectify"
 	"github.com/nlopes/slack"
 	"github.com/pkg/errors"
 	"github.com/sendgrid/sendgrid-go"
@@ -21,73 +19,40 @@ var NOEXIST = func(key string) error {
 	return errors.New("customer not found- key: " + key)
 }
 
-type CallbackFunc func(customer2 *stripe.Customer) error
-
 //	GoConnect holds the required configuration variables to create a GoConnect Instance. Use Init() to validate a GoConnect instance.
 type GoConnect struct {
-	twilio    *gotwilio.Twilio            `validate:"required"`
-	grid      *sendgrid.Client            `validate:"required"`
-	slck      *slack.Client               `validate:"required"`
-	util      *objectify.Handler          `validate:"required"`
-	hook      *hooks.SlackHook            `validate:"required"`
-	customers map[string]*stripe.Customer `validate:"required"`
-	cfg       *api.Config                 `validate:"required"`
+	EmailAddress api.EmailAddress            `validate:"required"`
+	PhoneNumber  string                      `validate:"required"`
+	LogUsername  string                      `validate:"required"`
+	LogChannel   string                      `validate:"required"`
+	twilio       *gotwilio.Twilio            `validate:"required"`
+	grid         *sendgrid.Client            `validate:"required"`
+	slck         *slack.Client               `validate:"required"`
+	hook         *hooks.SlackHook            `validate:"required"`
+	customers    map[string]*stripe.Customer `validate:"required"`
+	cfg          *api.Access                 `validate:"required"`
 }
 
-func New(cfg *api.Config) *GoConnect {
-	util := objectify.Default()
-	err := util.Validate(cfg)
+func (g *GoConnect) Init(cfg *api.Access) error {
+	if cfg == nil {
+		cfg = api.AccessFromEnv()
+	}
+	err := api.Util.Validate(cfg)
 	if err != nil {
-		util.Fatalln(err.Error())
+		api.Util.Fatalln(err.Error())
 	}
 	stripe.Key = cfg.StripeKey
-	return &GoConnect{
-		twilio:    gotwilio.NewTwilioClient(cfg.TwilioAccount, cfg.TwilioKey),
-		grid:      sendgrid.NewSendClient(cfg.SendgridKey),
-		slck:      slack.New(cfg.SlackKey),
-		util:      util,
-		customers: make(map[string]*stripe.Customer),
-		cfg:       cfg,
-	}
-}
-
-//TWILIO_ACCOUNT,  TWILIO_KEY,  SENDGRID_KEY,  SLACK_KEY,  STRIPE_KEY, EMAIL_ADDRESS, EMAIL_NAME, SLACK_LOG_USERNAME, SLACK_LOG_CHANNEL
-func NewFromEnv(customerIndex api.CustomerIndex, debug bool) *GoConnect {
-	cfg := api_util.FromEnv(debug, customerIndex)
-	s := slack.New(cfg.SlackKey)
-	if cfg.Debug {
-		s.Debug()
-	}
-	util := objectify.Default()
-	err := util.Validate(cfg)
-	if err != nil {
-		util.Fatalln(err.Error())
-	}
-	stripe.Key = cfg.StripeKey
-	return &GoConnect{
-		twilio:    gotwilio.NewTwilioClient(cfg.TwilioAccount, cfg.TwilioKey),
-		grid:      sendgrid.NewSendClient(cfg.SendgridKey),
-		slck:      s,
-		util:      util,
-		hook:      hooks.New(cfg.LogConfig.Username, cfg.LogConfig.Channel),
-		customers: make(map[string]*stripe.Customer),
-		cfg:       cfg,
-	}
-}
-
-// Init starts syncing the customer cache and validates the GoConnect instance
-func (g *GoConnect) Init() error {
+	g.twilio = gotwilio.NewTwilioClient(cfg.TwilioAccount, cfg.TwilioKey)
+	g.slck = slack.New(cfg.SlackKey)
+	g.customers = make(map[string]*stripe.Customer)
+	g.cfg = cfg
+	g.grid = sendgrid.NewSendClient(cfg.SendgridKey)
 	go g.SyncCustomers()
-	return g.util.Validate(g)
+	return api.Util.Validate(g)
 }
 
-func (g *GoConnect) Config() *api.Config {
+func (g *GoConnect) Access() *api.Access {
 	return g.cfg
-}
-
-//Util returns an objectify util tool ref:github.com/autom8ter/objectify
-func (g *GoConnect) Util() *objectify.Handler {
-	return g.util
 }
 
 //Customers returns your current stripe customer cache
@@ -97,8 +62,8 @@ func (g *GoConnect) Customers() map[string]*stripe.Customer {
 
 func (g *GoConnect) SendEmail(r *api.RecipientEmail) error {
 	_, err := g.grid.Send(mail.NewSingleEmail(&mail.Email{
-		Name:    g.cfg.EmailAddress.Name,
-		Address: g.cfg.EmailAddress.Address,
+		Name:    g.EmailAddress.Name,
+		Address: g.EmailAddress.Address,
 	}, r.Subject, &mail.Email{
 		Name:    r.To.Name,
 		Address: r.To.Address,
@@ -241,12 +206,8 @@ func (g *GoConnect) GetCustomer(key string) (*stripe.Customer, bool) {
 	return nil, false
 }
 
-func (g *GoConnect) SwitchIndex(typ api.CustomerIndex) {
-	g.cfg.CustomerIndex = typ
-}
-
 func (g *GoConnect) LogHook(ctx context.Context, hook *api.LogHook) error {
-	return g.hook.PostLogEntry(ctx, g.slck, hook.Author, hook.Icon, hook.Title, g.util.Entry())
+	return g.hook.PostLogEntry(ctx, g.slck, hook.Author, hook.Icon, hook.Title, api.Util.Entry())
 }
 
 func (g *GoConnect) Hook(ctx context.Context, attachments ...slack.Attachment) error {
@@ -259,15 +220,7 @@ func (g *GoConnect) SyncCustomers() {
 	c := custList.Customer()
 	for {
 		for custList.Next() {
-			c = custList.Customer()
-			switch g.cfg.CustomerIndex {
-			case api.CustomerIndex_EMAIL:
-				g.customers[c.Email] = c
-			case api.CustomerIndex_PHONE:
-				g.customers[c.Shipping.Phone] = c
-			default:
-				g.customers[c.ID] = c
-			}
+			g.customers[c.Email] = c
 		}
 	}
 }
@@ -375,17 +328,9 @@ func (g *GoConnect) CreateYearlyPlan(amount int64, id, prodId, prodName, nicknam
 }
 
 func (g *GoConnect) CreateCustomer(email, description, plan, name, phone string) (*stripe.Customer, error) {
-	if g.cfg.CustomerIndex == api.CustomerIndex_EMAIL {
-		_, ok := g.GetCustomer(email)
-		if !ok {
-			return nil, NOEXIST(email)
-		}
-	}
-	if g.cfg.CustomerIndex == api.CustomerIndex_PHONE {
-		_, ok := g.GetCustomer(phone)
-		if !ok {
-			return nil, NOEXIST(phone)
-		}
+	_, ok := g.GetCustomer(email)
+	if !ok {
+		return nil, NOEXIST(email)
 	}
 	c, err := customer.New(&stripe.CustomerParams{
 		Description: stripe.String(description),
@@ -407,36 +352,16 @@ func (g *GoConnect) CreateCustomer(email, description, plan, name, phone string)
 	if err != nil {
 		return nil, err
 	}
-	switch g.cfg.CustomerIndex {
-	case api.CustomerIndex_PHONE:
-		g.customers[c.Shipping.Phone] = c
-	case api.CustomerIndex_EMAIL:
-		g.customers[c.Email] = c
-	default:
-		g.customers[c.ID] = c
-	}
+	g.customers[c.Email] = c
 	return c, nil
 }
 
 func (g *GoConnect) CustomerKeys() []string {
-	return g.util.Sort(g.customerKeys(g.customers))
+	return api.Util.Sort(g.customerKeys(g.customers))
 }
 
 func (g *GoConnect) CustomerExists(key string) bool {
-	return g.util.Contains(g.CustomerKeys(), key)
-}
-
-func (g *GoConnect) CustomerCallBack(key string, funcs ...CallbackFunc) error {
-	cust, ok := g.GetCustomer(key)
-	if !ok {
-		return NOEXIST(key)
-	}
-	for i, f := range funcs {
-		if err := f(cust); err != nil {
-			return errors.Wrapf(err, "callback index: %v", i)
-		}
-	}
-	return nil
+	return api.Util.Contains(g.CustomerKeys(), key)
 }
 
 func (g *GoConnect) HandleSlackEvents(funcs ...hooks.EventHandler) {
@@ -604,7 +529,7 @@ func (g *GoConnect) AddChannelReminder(r *api.ChannelReminder) (string, error) {
 }
 
 func (g *GoConnect) AddUserReminder(r *api.UserReminder) (string, error) {
-	rem, err := g.slck.AddUserReminder(r.UserId, r.Text, r.Time)
+	rem, err := g.slck.AddUserReminder(r.Id, r.Text, r.Time)
 	if err != nil {
 		return "", errors.Wrap(err, "goconnect.AddUserReminder")
 	}
